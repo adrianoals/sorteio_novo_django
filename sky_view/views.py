@@ -8,13 +8,6 @@ from openpyxl import load_workbook
 from io import BytesIO  # Para manipular imagens em memória
 from .models import Apartamento, Vaga, Sorteio
 
-
-import random
-from django.shortcuts import render, redirect
-from django.urls import reverse
-from django.utils import timezone
-from sky_view.models import Apartamento, Vaga, Sorteio
-
 # View para realizar o sorteio
 def sky_view_sorteio(request):
     if request.method == 'POST':
@@ -138,7 +131,8 @@ def sky_view_sorteio(request):
     # Se o método for GET, exibe os resultados ou a interface de sorteio
     sorteio_iniciado = request.session.get('sorteio_iniciado', False)
     vagas_atribuidas = Sorteio.objects.exists()
-    resultados_sorteio = Sorteio.objects.all() if vagas_atribuidas else None
+    # resultados_sorteio = Sorteio.objects.all() if vagas_atribuidas else None
+    resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
 
     context = {
         'sorteio_iniciado': sorteio_iniciado,
@@ -153,7 +147,7 @@ def sky_view_sorteio(request):
 
 def sky_view_excel(request):
     # Caminho do modelo Excel
-    caminho_modelo = 'setup/static/assets/modelos/sorteio_skyview.xlsx'
+    caminho_modelo = 'setup/static/assets/modelos/sorteioskyview.xlsx'
 
     # Carregar o modelo existente
     wb = load_workbook(caminho_modelo)
@@ -164,15 +158,15 @@ def sky_view_excel(request):
 
     # Pegar o horário de conclusão do sorteio
     horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
-    ws['B8'] = f"Sorteio realizado em: {horario_conclusao}"
+    ws['A8'] = f"Sorteio realizado em: {horario_conclusao}"
 
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
     for sorteio in resultados_sorteio:
-        ws[f'B{linha}'] = sorteio.apartamento.numero  # Número do apartamento
-        ws[f'C{linha}'] = sorteio.vaga.numero  # Número da vaga
-        ws[f'D{linha}'] = f'Subsolo {sorteio.vaga.subsolo}'  # Subsolo
-        ws[f'E{linha}'] = sorteio.vaga.tipo_vaga  # Tipo da vaga
+        ws[f'A{linha}'] = sorteio.apartamento.numero  # Número do apartamento
+        ws[f'B{linha}'] = sorteio.vaga.numero  # Número da vaga
+        ws[f'C{linha}'] = f'Subsolo {sorteio.vaga.subsolo}'  # Subsolo
+        ws[f'D{linha}'] = sorteio.vaga.tipo_vaga  # Tipo da vaga
         linha += 1
 
     # Configurar a resposta para o download do Excel
