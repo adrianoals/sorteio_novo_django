@@ -13,6 +13,5 @@ urlpatterns = [
         # Rota para zerar o sorteio
         path('sky-view-zerar/', sky_view_zerar, name='sky_view_zerar'),
 
-
 ]
 
