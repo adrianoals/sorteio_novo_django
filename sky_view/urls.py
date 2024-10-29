@@ -5,7 +5,7 @@ urlpatterns = [
         # Rota para iniciar o sorteio
         path('sky-view-sorteio/', sky_view_sorteio, name='sky_view_sorteio'), 
         # Rota para exportar os resultados do sorteio para um arquivo Excel
-        path('sky-view-excek', sky_view_excel, name='sky_view_excel'),
+        path('sky-view-excel', sky_view_excel, name='sky_view_excel'),
 
         # Rota para gerar o QR Code do sorteio
         path('sky-view-qrcode', sky_view_qrcode, name='sky_view_qrcode'),
