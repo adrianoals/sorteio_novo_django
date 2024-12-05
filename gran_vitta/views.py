@@ -8,7 +8,7 @@ from openpyxl import load_workbook
 from io import BytesIO  # Para manipular imagens em memória
 from gran_vitta.models import Apartamento, Vaga, Sorteio
 
-# View para realizar o sorteio
+
 def gran_vitta_sorteio(request):
     if request.method == 'POST':
         # Marcar o sorteio como iniciado
@@ -32,23 +32,31 @@ def gran_vitta_sorteio(request):
         apartamentos_pne = [apt for apt in apartamentos if apt.is_pne]
         vagas_pne = [vaga for vaga in vagas_disponiveis if vaga.is_pne]
 
-        # Alocar vagas PNE para apartamentos PNE
-        for apartamento in apartamentos_pne:
-            if vagas_pne:
-                vaga_pne = vagas_pne.pop(0)
-                Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
-                vagas_disponiveis.remove(vaga_pne)
-                apartamentos.remove(apartamento)
+        # Sortear vagas PNE entre os apartamentos PNE
+        if apartamentos_pne and vagas_pne:
+            # Embaralhar aleatoriamente os apartamentos PNE e as vagas PNE
+            random.shuffle(apartamentos_pne)
+            random.shuffle(vagas_pne)
 
-        # Caso não existam apartamentos PNE, liberar as vagas PNE para o sorteio geral
-        if not apartamentos_pne:
+            # Realizar sorteio para as vagas PNE
+            for apartamento in apartamentos_pne:
+                if vagas_pne:
+                    vaga_pne = vagas_pne.pop(0)  # Retira a vaga sorteada
+                    Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
+                    vagas_disponiveis.remove(vaga_pne)  # Remove a vaga sorteada da lista geral
+                    apartamentos.remove(apartamento)   # Remove o apartamento já sorteado
+                else:
+                    break  # Se não houver mais vagas PNE, interrompe o loop
+
+        # Liberar as vagas PNE restantes (se houver) para o sorteio geral
+        if vagas_pne:
             vagas_disponiveis.extend(vagas_pne)
 
-        # Realizar sorteio para os demais apartamentos
+        # Realizar sorteio para os demais apartamentos, incluindo PNE não alocados
         random.shuffle(vagas_disponiveis)
         for apartamento in apartamentos:
             if vagas_disponiveis:
-                vaga = vagas_disponiveis.pop(0)
+                vaga = vagas_disponiveis.pop(0)  # Retira a vaga sorteada
                 Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
 
         # Marcar o sorteio como concluído
@@ -67,6 +75,67 @@ def gran_vitta_sorteio(request):
     }
 
     return render(request, 'gran_vitta/gran_vitta_sorteio.html', context)
+
+
+# # View para realizar o sorteio
+# def gran_vitta_sorteio(request):
+#     if request.method == 'POST':
+#         # Marcar o sorteio como iniciado
+#         request.session['sorteio_iniciado'] = True
+
+#         # Redirecionar imediatamente para renderizar o estado do sorteio
+#         return redirect(reverse('gran_vitta_sorteio'))
+
+#     # Sorteio sendo iniciado
+#     sorteio_iniciado = request.session.get('sorteio_iniciado', False)
+
+#     if sorteio_iniciado:
+#         # Limpar registros anteriores de sorteio
+#         Sorteio.objects.all().delete()
+
+#         # Obtenha todos os apartamentos e vagas disponíveis
+#         apartamentos = list(Apartamento.objects.all())
+#         vagas_disponiveis = list(Vaga.objects.all())
+
+#         # Separar apartamentos e vagas PNE
+#         apartamentos_pne = [apt for apt in apartamentos if apt.is_pne]
+#         vagas_pne = [vaga for vaga in vagas_disponiveis if vaga.is_pne]
+
+#         # Alocar vagas PNE para apartamentos PNE
+#         for apartamento in apartamentos_pne:
+#             if vagas_pne:
+#                 vaga_pne = vagas_pne.pop(0)
+#                 Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
+#                 vagas_disponiveis.remove(vaga_pne)
+#                 apartamentos.remove(apartamento)
+
+#         # Caso não existam apartamentos PNE, liberar as vagas PNE para o sorteio geral
+#         if not apartamentos_pne:
+#             vagas_disponiveis.extend(vagas_pne)
+
+#         # Realizar sorteio para os demais apartamentos
+#         random.shuffle(vagas_disponiveis)
+#         for apartamento in apartamentos:
+#             if vagas_disponiveis:
+#                 vaga = vagas_disponiveis.pop(0)
+#                 Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
+
+#         # Marcar o sorteio como concluído
+#         request.session['sorteio_iniciado'] = False
+#         request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
+
+#     # Exibir os resultados do sorteio ordenados por ID do apartamento
+#     vagas_atribuidas = Sorteio.objects.exists()
+#     resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
+
+#     context = {
+#         'sorteio_iniciado': sorteio_iniciado,
+#         'vagas_atribuidas': vagas_atribuidas,
+#         'resultados_sorteio': resultados_sorteio,
+#         'horario_conclusao': request.session.get('horario_conclusao', '')  # Exibe o horário de conclusão
+#     }
+
+#     return render(request, 'gran_vitta/gran_vitta_sorteio.html', context)
 
 
 
