@@ -18,9 +18,9 @@ function revelarLinhasProgressivamente() {
                         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
                         // Esconde a animação de carregamento e o container
                         loadingContainer.style.display = 'none';
-                    }, 500); // Tempo adicional para a última linha ser revelada antes de esconder a animação
+                    }, 100); // Tempo adicional para a última linha ser revelada antes de esconder a animação
                 }
-            }, index * 500); // Intervalo entre a revelação de cada linha
+            }, index * 100); // Intervalo entre a revelação de cada linha
         });
     } else {
         // Se não houver linhas, esconde a animação imediatamente
