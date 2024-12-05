@@ -88,9 +88,9 @@ def gran_vitta_excel(request):
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
     for sorteio in resultados_sorteio:
-        ws[f'A{linha}'] = sorteio.apartamento.numero  # Número do apartamento
+        ws[f'A{linha}'] = f'Unidade {sorteio.apartamento.numero}' # Número do apartamento
         ws[f'B{linha}'] = sorteio.vaga.numero  # Número da vaga
-        ws[f'C{linha}'] = f'Subsolo {sorteio.vaga.subsolo}'  # Subsolo
+        ws[f'C{linha}'] = sorteio.vaga.subsolo # Subsolo
         linha += 1
 
     # Configurar a resposta para o download do Excel

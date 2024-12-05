@@ -6,7 +6,7 @@ vaga_data = [
     ('1º Subsolo', range(21, 61)),  # 40 vagas
     ('2º Subsolo', range(61, 111)),  # 50 vagas
     ('3º Subsolo', range(111, 161)),  # 50 vagas
-    ('4º Subsolo', range(161, 210)),  # 49 vagas
+    ('4º Subsolo', range(161, 201)),  # 49 vagas
 ]
 
 # Criar vagas
