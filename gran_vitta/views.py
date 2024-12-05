@@ -6,7 +6,8 @@ from django.urls import reverse
 # from openpyxl import Workbook  # Para gerar o Excel
 from openpyxl import load_workbook
 from io import BytesIO  # Para manipular imagens em memória
-from .models import Apartamento, Vaga, Sorteio
+from gran_vitta.models import Apartamento, Vaga, Sorteio
+
 
 # View para realizar o sorteio
 def gran_vitta_sorteio(request):
@@ -14,131 +15,44 @@ def gran_vitta_sorteio(request):
         # Limpar registros anteriores de sorteio
         Sorteio.objects.all().delete()
 
-        # Apartamentos com vagas travadas no Subsolo 01 e 02
-        apartamentos_vagas_travadas = {
-            '1301': [('13B', '1º Subsolo')],  # Subsolo 01
-            '1604': [('15', '1º Subsolo'), ('16', '1º Subsolo')],  # Subsolo 01
-            '1603': [('16', '2º Subsolo'), ('17', '2º Subsolo')]   # Subsolo 02
-        }
-
-        # Apartamentos com direito a vagas no térreo
-        apartamentos_terreo_travados = ['0101', '0102', '0103', '0104', '0201', '0202', '0203', '0204', '0205']
-
         # Obtenha todos os apartamentos e vagas disponíveis
         apartamentos = list(Apartamento.objects.all())
-        vagas_simples = list(Vaga.objects.filter(tipo_vaga='Simples'))  # Convertido para lista
-        vagas_duplas = list(Vaga.objects.filter(tipo_vaga='Dupla'))  # Vagas duplas
-        vaga_pne = Vaga.objects.filter(is_pne=True).first()  # Vaga PNE do térreo
+        vagas_disponiveis = list(Vaga.objects.all())
 
-        # Filtrar as vagas do térreo
-        vagas_terreo = [vaga for vaga in vagas_simples if vaga.subsolo == 'Térreo']
+        # Separar apartamentos e vagas PNE
+        apartamentos_pne = [apt for apt in apartamentos if apt.is_pne]
+        vagas_pne = [vaga for vaga in vagas_disponiveis if vaga.is_pne]
 
-        resultados_sorteio = []
+        # Verificar se há vagas suficientes para atender aos apartamentos PNE
+        if len(apartamentos_pne) > len(vagas_pne):
+            return render(request, 'gran_vitta/gran_vitta_sorteio.html', {
+                'error_message': 'Não há vagas PNE suficientes para os apartamentos PNE.',
+            })
 
-        # Logs iniciais
-        print("Inicialmente, apartamentos:")
-        for apt in apartamentos:
-            print(f" - {apt.numero}")
+        # Alocar vagas PNE para apartamentos PNE
+        for apartamento in apartamentos_pne:
+            vaga_pne = vagas_pne.pop(0)
+            Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
+            vagas_disponiveis.remove(vaga_pne)
+            apartamentos.remove(apartamento)
 
-        print("Inicialmente, vagas simples:")
-        for vaga in vagas_simples:
-            print(f" - {vaga.numero} - {vaga.subsolo} ({vaga.tipo_vaga})")
-
-        print("Inicialmente, vagas duplas:")
-        for vaga in vagas_duplas:
-            print(f" - {vaga}")
-
-        print(f"Vaga PNE inicial: {vaga_pne.numero if vaga_pne else 'Nenhuma vaga PNE disponível'}")
-        print("Vagas no térreo:")
-        for vaga in vagas_terreo:
-            print(f" - {vaga.numero}")
-
-        # 1. Alocar as vagas travadas
-        for apt_num, vagas in apartamentos_vagas_travadas.items():
-            apartamento = Apartamento.objects.get(numero=apt_num)
-            for vaga_num, subsolo in vagas:
-                vaga = Vaga.objects.filter(numero=f'Vaga {vaga_num}', subsolo=subsolo).first()
-                if vaga:
-                    sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
-                    resultados_sorteio.append(sorteio)
-                    vagas_simples.remove(vaga)
-                    print(f"Vaga {vaga.numero} alocada para apartamento {apartamento.numero}.")
-
-        # 2. Sorteio de apartamentos PNE
-        apartamento_pne = [apt for apt in apartamentos if apt.is_pne]
-        apt_movido_para_subsolo = None
-
-        if apartamento_pne and vaga_pne:
-            sorteio_pne = Sorteio.objects.create(apartamento=apartamento_pne[0], vaga=vaga_pne)
-            resultados_sorteio.append(sorteio_pne)
-            print(f"Vaga PNE {vaga_pne.numero} alocada para apartamento {apartamento_pne[0].numero}.")
-            vagas_terreo.remove(vaga_pne)
-            apt_movido_para_subsolo = apartamentos_terreo_travados.pop()  # Mover um apt para sorteio no subsolo
-            apartamento_pne.pop(0)
-
-        # 3. Sorteio das vagas no térreo
-        print("Vagas disponíveis no térreo antes do sorteio:")
-        for vaga in vagas_terreo:
-            print(f" - {vaga.numero}")
-
-        random.shuffle(vagas_terreo)
-        for apt_num in apartamentos_terreo_travados:
-            apartamento = Apartamento.objects.get(numero=apt_num)
-            if vagas_terreo:
-                vaga_terreo = vagas_terreo.pop(0)
-                sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga_terreo)
-                resultados_sorteio.append(sorteio)
-                vagas_simples.remove(vaga_terreo)
-                print(f"Vaga {vaga_terreo.numero} do térreo alocada para apartamento {apartamento.numero}.")
-
-        # Verificar se um apartamento foi movido para sorteio com as vagas simples
-        if apt_movido_para_subsolo:
-            apartamento = Apartamento.objects.get(numero=apt_movido_para_subsolo)
-            if vagas_simples:
-                vaga_simples = random.choice(vagas_simples)
-                sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga_simples)
-                resultados_sorteio.append(sorteio)
-                vagas_simples.remove(vaga_simples)
-                print(f"Vaga {vaga_simples.numero} alocada para apartamento {apartamento.numero}.")
-
-        # 4. Sorteio das vagas duplas
+        # Realizar sorteio para os demais apartamentos
+        random.shuffle(vagas_disponiveis)
         for apartamento in apartamentos:
-            if apartamento.direito_vaga_dupla and apartamento.numero not in apartamentos_vagas_travadas:
-                if vagas_duplas:
-                    vaga_dupla = random.choice(vagas_duplas)
-                    sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga_dupla)
-                    resultados_sorteio.append(sorteio)
-                    vagas_duplas.remove(vaga_dupla)
-                    print(f"Vaga dupla {vaga_dupla.numero} alocada para apartamento {apartamento.numero}.")
+            if vagas_disponiveis:
+                vaga = vagas_disponiveis.pop(0)
+                Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
 
-        # 5. Sorteio das vagas simples para os demais apartamentos
-        for apartamento in apartamentos:
-            if apartamento.numero not in apartamentos_vagas_travadas and apartamento.numero not in apartamentos_terreo_travados and not apartamento.direito_vaga_dupla:
-                if vagas_simples:
-                    vaga_simples = random.choice(vagas_simples)
-                    sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga_simples)
-                    resultados_sorteio.append(sorteio)
-                    vagas_simples.remove(vaga_simples)
-                    print(f"Vaga {vaga_simples.numero} alocada para apartamento {apartamento.numero}.")
-
-        # Marcar o sorteio como iniciado e armazenar o horário de conclusão
-        request.session['sorteio_iniciado'] = True
-        request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
-
-        # Redireciona para a mesma página após o sorteio
+        # Redireciona para exibir os resultados
         return redirect(reverse('gran_vitta_sorteio'))
 
     # Se o método for GET, exibe os resultados ou a interface de sorteio
-    sorteio_iniciado = request.session.get('sorteio_iniciado', False)
-    vagas_atribuidas = Sorteio.objects.exists()
-    # resultados_sorteio = Sorteio.objects.all() if vagas_atribuidas else None
-    resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
+    sorteio_iniciado = Sorteio.objects.exists()
+    resultados_sorteio = Sorteio.objects.order_by('apartamento__numero') if sorteio_iniciado else None
 
     context = {
         'sorteio_iniciado': sorteio_iniciado,
-        'vagas_atribuidas': vagas_atribuidas,
         'resultados_sorteio': resultados_sorteio,
-        'horario_conclusao': request.session.get('horario_conclusao', '')  # Exibe o horário de conclusão
     }
 
     return render(request, 'gran_vitta/gran_vitta_sorteio.html', context)
@@ -166,7 +80,6 @@ def gran_vitta_excel(request):
         ws[f'A{linha}'] = sorteio.apartamento.numero  # Número do apartamento
         ws[f'B{linha}'] = sorteio.vaga.numero  # Número da vaga
         ws[f'C{linha}'] = f'Subsolo {sorteio.vaga.subsolo}'  # Subsolo
-        ws[f'D{linha}'] = sorteio.vaga.tipo_vaga  # Tipo da vaga
         linha += 1
 
     # Configurar a resposta para o download do Excel

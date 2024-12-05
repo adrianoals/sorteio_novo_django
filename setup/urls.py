@@ -5,7 +5,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('tres_coelhos.urls')), 
     path('', include('sky_view.urls')), 
-    path('', include('gran_vita.urls')), 
+    path('', include('gran_vitta.urls')), 
 
 ]
 

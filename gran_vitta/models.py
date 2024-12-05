@@ -8,7 +8,7 @@ class Apartamento(models.Model):
     def __str__(self):
         return f"Apartamento {self.numero}"
 
-# Representa as vagas de garagem, incluindo simples e duplas
+# Representa as vagas de garagem
 class Vaga(models.Model):
     SUBSOLO_CHOICES = [
         ('Térreo', 'Térreo'),
@@ -18,12 +18,12 @@ class Vaga(models.Model):
         ('4º Subsolo', '4º Subsolo')
     ]
     
-    numero = models.CharField(max_length=20)  # Ex: "Vaga 01", "Vaga Dupla 01 e 02"
+    numero = models.CharField(max_length=20)  # Ex: "Vaga 01", 
     subsolo = models.CharField(max_length=10, choices=SUBSOLO_CHOICES)
     is_pne = models.BooleanField(default=False)  # Indica se a vaga é reservada para PNE
     
     def __str__(self):
-        return f"{self.numero} - {self.subsolo} ({self.tipo_vaga})"
+        return f"{self.numero} - {self.subsolo}"
 
 # Armazena o resultado do sorteio, vinculando apartamentos a vagas
 class Sorteio(models.Model):
