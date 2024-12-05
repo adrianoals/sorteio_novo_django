@@ -8,10 +8,19 @@ from openpyxl import load_workbook
 from io import BytesIO  # Para manipular imagens em memória
 from gran_vitta.models import Apartamento, Vaga, Sorteio
 
-
 # View para realizar o sorteio
 def gran_vitta_sorteio(request):
     if request.method == 'POST':
+        # Marcar o sorteio como iniciado
+        request.session['sorteio_iniciado'] = True
+
+        # Redirecionar imediatamente para renderizar o estado do sorteio
+        return redirect(reverse('gran_vitta_sorteio'))
+
+    # Sorteio sendo iniciado
+    sorteio_iniciado = request.session.get('sorteio_iniciado', False)
+
+    if sorteio_iniciado:
         # Limpar registros anteriores de sorteio
         Sorteio.objects.all().delete()
 
@@ -23,18 +32,17 @@ def gran_vitta_sorteio(request):
         apartamentos_pne = [apt for apt in apartamentos if apt.is_pne]
         vagas_pne = [vaga for vaga in vagas_disponiveis if vaga.is_pne]
 
-        # Verificar se há vagas suficientes para atender aos apartamentos PNE
-        if len(apartamentos_pne) > len(vagas_pne):
-            return render(request, 'gran_vitta/gran_vitta_sorteio.html', {
-                'error_message': 'Não há vagas PNE suficientes para os apartamentos PNE.',
-            })
-
         # Alocar vagas PNE para apartamentos PNE
         for apartamento in apartamentos_pne:
-            vaga_pne = vagas_pne.pop(0)
-            Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
-            vagas_disponiveis.remove(vaga_pne)
-            apartamentos.remove(apartamento)
+            if vagas_pne:
+                vaga_pne = vagas_pne.pop(0)
+                Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
+                vagas_disponiveis.remove(vaga_pne)
+                apartamentos.remove(apartamento)
+
+        # Caso não existam apartamentos PNE, liberar as vagas PNE para o sorteio geral
+        if not apartamentos_pne:
+            vagas_disponiveis.extend(vagas_pne)
 
         # Realizar sorteio para os demais apartamentos
         random.shuffle(vagas_disponiveis)
@@ -43,16 +51,19 @@ def gran_vitta_sorteio(request):
                 vaga = vagas_disponiveis.pop(0)
                 Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
 
-        # Redireciona para exibir os resultados
-        return redirect(reverse('gran_vitta_sorteio'))
+        # Marcar o sorteio como concluído
+        request.session['sorteio_iniciado'] = False
+        request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
 
-    # Se o método for GET, exibe os resultados ou a interface de sorteio
-    sorteio_iniciado = Sorteio.objects.exists()
-    resultados_sorteio = Sorteio.objects.order_by('apartamento__numero') if sorteio_iniciado else None
+    # Exibir os resultados do sorteio ordenados por ID do apartamento
+    vagas_atribuidas = Sorteio.objects.exists()
+    resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
 
     context = {
         'sorteio_iniciado': sorteio_iniciado,
+        'vagas_atribuidas': vagas_atribuidas,
         'resultados_sorteio': resultados_sorteio,
+        'horario_conclusao': request.session.get('horario_conclusao', '')  # Exibe o horário de conclusão
     }
 
     return render(request, 'gran_vitta/gran_vitta_sorteio.html', context)
@@ -61,7 +72,7 @@ def gran_vitta_sorteio(request):
 
 def gran_vitta_excel(request):
     # Caminho do modelo Excel
-    caminho_modelo = 'setup/static/assets/modelos/sorteioskyview.xlsx'
+    caminho_modelo = 'setup/static/assets/modelos/sorteiogranvitta.xlsx'
 
     # Carregar o modelo existente
     wb = load_workbook(caminho_modelo)
