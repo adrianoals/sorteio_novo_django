@@ -18,7 +18,7 @@ class Vaga(models.Model):
         ('4º Subsolo', '4º Subsolo')
     ]
     
-    numero = models.CharField(max_length=20)  # Ex: "Vaga 01", 
+    numero = models.CharField(max_length=40)  # Ex: "Vaga 01", 
     subsolo = models.CharField(max_length=10, choices=SUBSOLO_CHOICES)
     is_pne = models.BooleanField(default=False)  # Indica se a vaga é reservada para PNE
     

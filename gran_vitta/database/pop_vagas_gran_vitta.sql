@@ -2,7 +2,7 @@ from gran_vitta.models import Vaga
 
 # Nova lista de vagas com dimensões
 vaga_data = [
-    ("001", "1º Subsolo", "Coberta", "2m 50cm x 5m", True),   # Deficiente
+    ("001", "1º Subsolo", "Coberta", "2m 50cm x 5m (PNE)", True),   # Deficiente
     ("002", "1º Subsolo", "Coberta", "2m 20cm x 4m 50cm", False),
     ("003", "1º Subsolo", "Coberta", "2m 20cm x 4m 50cm", False),
     ("004", "1º Subsolo", "Coberta", "2m 20cm x 4m 50cm", False),
@@ -75,7 +75,7 @@ vaga_data = [
     ("071", "2º Subsolo", "Coberta", "2m 20cm x 4m 50cm", False),
     ("072", "2º Subsolo", "Coberta", "2m 50cm x 5m", False),
     ("073", "2º Subsolo", "Coberta", "2m 20cm x 4m 50cm", False),
-    -- ("074", "2º Subsolo", "Coberta", "2m 50cm x 5m", True),  # Deficiente
+    ("074", "2º Subsolo", "Coberta", "2m 50cm x 5m", True),  # Deficiente
     ("075", "2º Subsolo", "Coberta", "2m 50cm x 5m", False),
     ("076", "2º Subsolo", "Coberta", "2m 20cm x 4m 50cm", False),
     ("077", "2º Subsolo", "Coberta", "2m 20cm x 4m 50cm", False),
@@ -202,15 +202,15 @@ vaga_data = [
     ("198", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
     ("199", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
     ("200", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("201", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("202", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("203", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("204", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("205", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("206", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("207", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("208", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
-    -- ("209", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("201", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("202", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("203", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("204", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("205", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("206", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("207", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("208", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
+    ("209", "4º Subsolo", "Descoberta", "2m 20cm x 4m 50cm", False),
 
 ]
 
