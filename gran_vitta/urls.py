@@ -3,7 +3,7 @@ from gran_vitta.views import gran_vitta_sorteio, gran_vitta_excel, gran_vitta_qr
 
 urlpatterns = [
         # Rota para iniciar o sorteio
-        path('gran-vitta-sorteio/', gran_vitta_sorteio, name='gran_vitta_sorteio'), 
+        # path('gran-vitta-sorteio/', gran_vitta_sorteio, name='gran_vitta_sorteio'), 
         # Rota para exportar os resultados do sorteio para um arquivo Excel
         path('gran-vitta-excel', gran_vitta_excel, name='gran_vitta_excel'),
 
