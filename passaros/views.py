@@ -1,0 +1,144 @@
+from django.shortcuts import render, redirect
+from django.utils import timezone
+import random
+from django.http import HttpResponse
+from django.urls import reverse
+# from openpyxl import Workbook  # Para gerar o Excel
+from openpyxl import load_workbook
+from io import BytesIO  # Para manipular imagens em memória
+from passaros.models import Apartamento, Vaga, Sorteio
+
+
+def passaros_sorteio(request):
+    if request.method == 'POST':
+        # Marcar o sorteio como iniciado
+        request.session['sorteio_iniciado'] = True
+
+        # Redirecionar imediatamente para renderizar o estado do sorteio
+        return redirect(reverse('passaros_sorteio'))
+
+    # Sorteio sendo iniciado
+    sorteio_iniciado = request.session.get('sorteio_iniciado', False)
+
+    if sorteio_iniciado:
+        # Limpar registros anteriores de sorteio
+        Sorteio.objects.all().delete()
+
+        # Obtenha todos os apartamentos e vagas disponíveis
+        apartamentos = list(Apartamento.objects.all())
+        vagas_disponiveis = list(Vaga.objects.all())
+
+        # Separar apartamentos e vagas PNE
+        apartamentos_pne = [apt for apt in apartamentos if apt.is_pne]
+        vagas_pne = [vaga for vaga in vagas_disponiveis if vaga.is_pne]
+
+        # Sortear vagas PNE entre os apartamentos PNE
+        if apartamentos_pne and vagas_pne:
+            # Embaralhar aleatoriamente os apartamentos PNE e as vagas PNE
+            random.shuffle(apartamentos_pne)
+            random.shuffle(vagas_pne)
+
+            # Realizar sorteio para as vagas PNE
+            for apartamento in apartamentos_pne:
+                if vagas_pne:
+                    vaga_pne = vagas_pne.pop(0)  # Retira a vaga sorteada
+                    Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
+                    vagas_disponiveis.remove(vaga_pne)  # Remove a vaga sorteada da lista geral
+                    apartamentos.remove(apartamento)   # Remove o apartamento já sorteado
+                else:
+                    break  # Se não houver mais vagas PNE, interrompe o loop
+
+        # Liberar as vagas PNE restantes (se houver) para o sorteio geral
+        if vagas_pne:
+            vagas_disponiveis.extend(vagas_pne)
+
+        # Realizar sorteio para os demais apartamentos, incluindo PNE não alocados
+        random.shuffle(vagas_disponiveis)
+        for apartamento in apartamentos:
+            if vagas_disponiveis:
+                vaga = vagas_disponiveis.pop(0)  # Retira a vaga sorteada
+                Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
+
+        # Marcar o sorteio como concluído
+        request.session['sorteio_iniciado'] = False
+        request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
+
+    # Exibir os resultados do sorteio ordenados por ID do apartamento
+    vagas_atribuidas = Sorteio.objects.exists()
+    resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
+
+    context = {
+        'sorteio_iniciado': sorteio_iniciado,
+        'vagas_atribuidas': vagas_atribuidas,
+        'resultados_sorteio': resultados_sorteio,
+        'horario_conclusao': request.session.get('horario_conclusao', '')  # Exibe o horário de conclusão
+    }
+
+    return render(request, 'passaros/passaros_sorteio.html', context)
+
+
+def passaros_excel(request):
+    # Caminho do modelo Excel
+    caminho_modelo = 'setup/static/assets/modelos/sorteiopassaros.xlsx'
+
+    # Carregar o modelo existente
+    wb = load_workbook(caminho_modelo)
+    ws = wb.active
+
+    # Ordenar os resultados do sorteio pelo ID do apartamento
+    resultados_sorteio = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id').all()
+
+    # Pegar o horário de conclusão do sorteio
+    horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
+    ws['A8'] = f"Sorteio realizado em: {horario_conclusao}"
+
+    # Começar a partir da linha 10 (baseado no layout do seu modelo)
+    linha = 10
+    for sorteio in resultados_sorteio:
+        ws[f'A{linha}'] = f'Unidade {sorteio.apartamento.numero}' # Número do apartamento
+        ws[f'B{linha}'] = sorteio.vaga.numero  # Número da vaga
+        ws[f'C{linha}'] = sorteio.vaga.subsolo # Subsolo
+        linha += 1
+
+    # Configurar a resposta para o download do Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="sorteio_passaros.xlsx"'
+
+    # Salvar o arquivo Excel na resposta
+    wb.save(response)
+
+    return response
+
+
+
+def passaros_qrcode(request):
+    # Obter todos os apartamentos para preencher o dropdown
+    apartamentos_disponiveis = Apartamento.objects.all()
+    
+    # Obter o apartamento selecionado através do filtro (via GET)
+    numero_apartamento = request.GET.get('apartamento')
+
+    # Inicializar a variável de resultados filtrados como uma lista vazia
+    resultados_filtrados = []
+
+    # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
+    if numero_apartamento:
+        # Buscar os sorteios para o apartamento selecionado
+        resultados_filtrados = Sorteio.objects.filter(apartamento__numero=numero_apartamento)
+
+    return render(request, 'passaros/passaros_qrcode.html', {
+        'resultados_filtrados': resultados_filtrados,
+        'apartamento_selecionado': numero_apartamento,
+        'apartamentos_disponiveis': apartamentos_disponiveis,
+    })
+
+
+
+def passaros_zerar(request):
+    if request.method == 'POST':
+        Sorteio.objects.all().delete()
+        return redirect('passaros_sorteio')
+    else:
+        return render(request, 'passaros/passaros_zerar.html')
+    
+
