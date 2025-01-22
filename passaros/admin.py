@@ -4,6 +4,7 @@ from .models import Bloco, Apartamento, Vaga, Sorteio
 @admin.register(Bloco)
 class BlocoAdmin(admin.ModelAdmin):
     list_display = ('id', 'numero')  # Exibe o ID e o número do bloco
+    list_filter = ('numero',)  # Adiciona filtro por bloco
     search_fields = ('numero',)  # Permite busca pelo número do bloco
 
 @admin.register(Apartamento)
