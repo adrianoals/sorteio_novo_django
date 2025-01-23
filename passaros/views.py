@@ -97,28 +97,6 @@ def passaros_excel(request):
     return response
 
 
-# def passaros_qrcode(request):
-#     # Obter todos os apartamentos para preencher o dropdown
-#     apartamentos_disponiveis = Apartamento.objects.all()
-    
-#     # Obter o apartamento selecionado através do filtro (via GET)
-#     numero_apartamento = request.GET.get('apartamento')
-
-#     # Inicializar a variável de resultados filtrados como uma lista vazia
-#     resultados_filtrados = []
-
-#     # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
-#     if numero_apartamento:
-#         # Buscar os sorteios para o apartamento selecionado
-#         resultados_filtrados = Sorteio.objects.filter(apartamento__numero=numero_apartamento)
-
-#     return render(request, 'passaros/passaros_qrcode.html', {
-#         'resultados_filtrados': resultados_filtrados,
-#         'apartamento_selecionado': numero_apartamento,
-#         'apartamentos_disponiveis': apartamentos_disponiveis,
-#     })
-
-
 def passaros_qrcode(request):
     # Obter todos os blocos disponíveis
     blocos_disponiveis = Bloco.objects.all()
