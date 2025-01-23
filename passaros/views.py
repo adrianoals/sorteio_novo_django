@@ -6,7 +6,7 @@ from django.urls import reverse
 # from openpyxl import Workbook  # Para gerar o Excel
 from openpyxl import load_workbook
 from io import BytesIO  # Para manipular imagens em memória
-from passaros.models import Apartamento, Vaga, Sorteio
+from passaros.models import Apartamento,Bloco, Vaga, Sorteio
 
 
 def passaros_sorteio(request):
@@ -24,40 +24,27 @@ def passaros_sorteio(request):
         # Limpar registros anteriores de sorteio
         Sorteio.objects.all().delete()
 
-        # Obtenha todos os apartamentos e vagas disponíveis
+        # Obter todos os apartamentos e vagas disponíveis
         apartamentos = list(Apartamento.objects.all())
         vagas_disponiveis = list(Vaga.objects.all())
 
-        # Separar apartamentos e vagas PNE
-        apartamentos_pne = [apt for apt in apartamentos if apt.is_pne]
-        vagas_pne = [vaga for vaga in vagas_disponiveis if vaga.is_pne]
-
-        # Sortear vagas PNE entre os apartamentos PNE
-        if apartamentos_pne and vagas_pne:
-            # Embaralhar aleatoriamente os apartamentos PNE e as vagas PNE
-            random.shuffle(apartamentos_pne)
-            random.shuffle(vagas_pne)
-
-            # Realizar sorteio para as vagas PNE
-            for apartamento in apartamentos_pne:
-                if vagas_pne:
-                    vaga_pne = vagas_pne.pop(0)  # Retira a vaga sorteada
-                    Sorteio.objects.create(apartamento=apartamento, vaga=vaga_pne)
-                    vagas_disponiveis.remove(vaga_pne)  # Remove a vaga sorteada da lista geral
-                    apartamentos.remove(apartamento)   # Remove o apartamento já sorteado
-                else:
-                    break  # Se não houver mais vagas PNE, interrompe o loop
-
-        # Liberar as vagas PNE restantes (se houver) para o sorteio geral
-        if vagas_pne:
-            vagas_disponiveis.extend(vagas_pne)
-
-        # Realizar sorteio para os demais apartamentos, incluindo PNE não alocados
+        # Embaralhar as listas para garantir aleatoriedade
+        random.shuffle(apartamentos)
         random.shuffle(vagas_disponiveis)
+
+        # Realizar o sorteio
         for apartamento in apartamentos:
-            if vagas_disponiveis:
-                vaga = vagas_disponiveis.pop(0)  # Retira a vaga sorteada
+            # Filtrar vagas disponíveis apenas para o bloco do apartamento
+            vagas_bloco = [vaga for vaga in vagas_disponiveis if vaga.bloco == apartamento.bloco]
+
+            if vagas_bloco:
+                # Seleciona a primeira vaga disponível no bloco
+                vaga = vagas_bloco.pop(0)
                 Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
+                vagas_disponiveis.remove(vaga)  # Remove a vaga da lista geral
+            else:
+                # Não há vagas disponíveis no bloco do apartamento
+                continue
 
         # Marcar o sorteio como concluído
         request.session['sorteio_iniciado'] = False
@@ -71,7 +58,7 @@ def passaros_sorteio(request):
         'sorteio_iniciado': sorteio_iniciado,
         'vagas_atribuidas': vagas_atribuidas,
         'resultados_sorteio': resultados_sorteio,
-        'horario_conclusao': request.session.get('horario_conclusao', '')  # Exibe o horário de conclusão
+        'horario_conclusao': request.session.get('horario_conclusao', ''),  # Exibe o horário de conclusão
     }
 
     return render(request, 'passaros/passaros_sorteio.html', context)
@@ -95,9 +82,9 @@ def passaros_excel(request):
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
     for sorteio in resultados_sorteio:
-        ws[f'A{linha}'] = f'Unidade {sorteio.apartamento.numero}' # Número do apartamento
-        ws[f'B{linha}'] = sorteio.vaga.numero  # Número da vaga
-        ws[f'C{linha}'] = sorteio.vaga.subsolo # Subsolo
+        ws[f'A{linha}'] = f"Bloco {sorteio.vaga.bloco.numero}" if sorteio.vaga.bloco else "Sem Bloco"
+        ws[f'B{linha}'] = f'Unidade {sorteio.apartamento.numero}'  # Número do apartamento
+        ws[f'C{linha}'] = sorteio.vaga.numero  # Número da vaga
         linha += 1
 
     # Configurar a resposta para o download do Excel
@@ -110,26 +97,62 @@ def passaros_excel(request):
     return response
 
 
+# def passaros_qrcode(request):
+#     # Obter todos os apartamentos para preencher o dropdown
+#     apartamentos_disponiveis = Apartamento.objects.all()
+    
+#     # Obter o apartamento selecionado através do filtro (via GET)
+#     numero_apartamento = request.GET.get('apartamento')
+
+#     # Inicializar a variável de resultados filtrados como uma lista vazia
+#     resultados_filtrados = []
+
+#     # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
+#     if numero_apartamento:
+#         # Buscar os sorteios para o apartamento selecionado
+#         resultados_filtrados = Sorteio.objects.filter(apartamento__numero=numero_apartamento)
+
+#     return render(request, 'passaros/passaros_qrcode.html', {
+#         'resultados_filtrados': resultados_filtrados,
+#         'apartamento_selecionado': numero_apartamento,
+#         'apartamentos_disponiveis': apartamentos_disponiveis,
+#     })
+
 
 def passaros_qrcode(request):
-    # Obter todos os apartamentos para preencher o dropdown
-    apartamentos_disponiveis = Apartamento.objects.all()
-    
-    # Obter o apartamento selecionado através do filtro (via GET)
-    numero_apartamento = request.GET.get('apartamento')
+    # Obter todos os blocos disponíveis
+    blocos_disponiveis = Bloco.objects.all()
 
-    # Inicializar a variável de resultados filtrados como uma lista vazia
+    # Obter o bloco selecionado através do filtro (via GET)
+    numero_bloco = request.GET.get('bloco')
+
+    # Inicializar apartamentos e resultados filtrados
+    apartamentos_disponiveis = []
     resultados_filtrados = []
 
-    # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
-    if numero_apartamento:
-        # Buscar os sorteios para o apartamento selecionado
-        resultados_filtrados = Sorteio.objects.filter(apartamento__numero=numero_apartamento)
+    # Se um bloco foi selecionado, filtrar os apartamentos disponíveis naquele bloco
+    if numero_bloco:
+        apartamentos_disponiveis = Apartamento.objects.filter(bloco__numero=numero_bloco)
+
+        # Obter o apartamento selecionado através do filtro
+        numero_apartamento = request.GET.get('apartamento')
+
+        if numero_apartamento:
+            # Filtrar os resultados do sorteio para o apartamento selecionado
+            resultados_filtrados = Sorteio.objects.filter(
+                apartamento__numero=numero_apartamento,
+                apartamento__bloco__numero=numero_bloco
+            )
+
+    else:
+        numero_apartamento = None
 
     return render(request, 'passaros/passaros_qrcode.html', {
-        'resultados_filtrados': resultados_filtrados,
-        'apartamento_selecionado': numero_apartamento,
+        'blocos_disponiveis': blocos_disponiveis,
         'apartamentos_disponiveis': apartamentos_disponiveis,
+        'resultados_filtrados': resultados_filtrados,
+        'bloco_selecionado': numero_bloco,
+        'apartamento_selecionado': numero_apartamento,
     })
 
 

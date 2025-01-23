@@ -9,23 +9,36 @@
 <main>
     <div class="p-4" id="container-sorteio">
         <div class="row mt-5 margem-up">
-            <div class="col-md-3"></div> 
+            <div class="col-md-3"></div>
 
             <div class="col-md-6 text-center text-dark">
-                <h1 class="mt-5 mb-5">Selecione seu apartamento!</h1>
+                <h1 class="mt-5 mb-5">Selecione seu bloco e apartamento!</h1>
                 <div class="filtro-apartamento text-center mb-5">
                     <form method="get" action="{% url 'passaros_qrcode' %}">
-                        <select id="numeroApartamento" name="apartamento" class="form-select filtro-destacado">
-                            <option value="" disabled {% if not apartamento_selecionado %}selected{% endif %}>Selecione seu apartamento</option>
-                            {% for apt in apartamentos_disponiveis %}
-                                {% if apt.numero == apartamento_selecionado %}
-                                    <option value="{{ apt.numero }}" selected>{{ apt.numero }}</option>
-                                {% else %}
-                                    <option value="{{ apt.numero }}">{{ apt.numero }}</option>
-                                {% endif %}
+                        <!-- Selecionar o bloco -->
+                        <label for="numeroBloco" class="form-label">Selecione o bloco</label>
+                        <select id="numeroBloco" name="bloco" class="form-select filtro-destacado" onchange="this.form.submit()">
+                            <option value="" disabled {% if not bloco_selecionado %}selected{% endif %}>Selecione o bloco</option>
+                            {% for bloco in blocos_disponiveis %}
+                                <option value="{{ bloco.numero }}" {% if bloco.numero == bloco_selecionado %}selected{% endif %}>
+                                    Bloco {{ bloco.numero }}
+                                </option>
                             {% endfor %}
                         </select>
-                        <button type="submit" class="btn btn-primary mt-3">Filtrar</button>
+
+                        <!-- Selecionar o apartamento -->
+                        <label for="numeroApartamento" class="form-label mt-3">Selecione o apartamento</label>
+                        <select id="numeroApartamento" name="apartamento" class="form-select filtro-destacado" {% if not bloco_selecionado %}disabled{% endif %}>
+                            <option value="" disabled {% if not apartamento_selecionado %}selected{% endif %}>Selecione seu apartamento</option>
+                            {% for apt in apartamentos_disponiveis %}
+                                <option value="{{ apt.numero }}" {% if apt.numero == apartamento_selecionado %}selected{% endif %}>
+                                    {{ apt.numero }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <!-- Botão para filtrar -->
+                        <button type="submit" class="btn btn-primary mt-3" {% if not bloco_selecionado %}disabled{% endif %}>Filtrar</button>
                     </form>
                 </div>
             </div>
@@ -35,10 +48,10 @@
 
         {% if resultados_filtrados %}
             <div class="resultados-filtrados mt-2 text-dark text-center">
-                <h3 class="text-center mb-4">Vagas para o apartamento: {{ apartamento_selecionado }}</h3>
+                <h3 class="text-center mb-4">Vaga para o apartamento: {{ apartamento_selecionado }}</h3>
                 {% for sorteio in resultados_filtrados %}
                     <h5>
-                        {{ sorteio.vaga.numero }} - {{ sorteio.vaga.subsolo }}
+                        {{ sorteio.vaga.numero }}
                     </h5>
                 {% endfor %}
             </div>
