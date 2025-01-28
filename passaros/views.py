@@ -9,6 +9,60 @@ from io import BytesIO  # Para manipular imagens em memória
 from passaros.models import Apartamento,Bloco, Vaga, Sorteio
 
 
+# def passaros_sorteio(request):
+#     if request.method == 'POST':
+#         # Marcar o sorteio como iniciado
+#         request.session['sorteio_iniciado'] = True
+
+#         # Redirecionar imediatamente para renderizar o estado do sorteio
+#         return redirect(reverse('passaros_sorteio'))
+
+#     # Sorteio sendo iniciado
+#     sorteio_iniciado = request.session.get('sorteio_iniciado', False)
+
+#     if sorteio_iniciado:
+#         # Limpar registros anteriores de sorteio
+#         Sorteio.objects.all().delete()
+
+#         # Obter todos os apartamentos e vagas disponíveis
+#         apartamentos = list(Apartamento.objects.all())
+#         vagas_disponiveis = list(Vaga.objects.all())
+
+#         # Embaralhar as listas para garantir aleatoriedade
+#         random.shuffle(apartamentos)
+#         random.shuffle(vagas_disponiveis)
+
+#         # Realizar o sorteio
+#         for apartamento in apartamentos:
+#             # Filtrar vagas disponíveis apenas para o bloco do apartamento
+#             vagas_bloco = [vaga for vaga in vagas_disponiveis if vaga.bloco == apartamento.bloco]
+
+#             if vagas_bloco:
+#                 # Seleciona a primeira vaga disponível no bloco
+#                 vaga = vagas_bloco.pop(0)
+#                 Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
+#                 vagas_disponiveis.remove(vaga)  # Remove a vaga da lista geral
+#             else:
+#                 # Não há vagas disponíveis no bloco do apartamento
+#                 continue
+
+#         # Marcar o sorteio como concluído
+#         request.session['sorteio_iniciado'] = False
+#         request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
+
+#     # Exibir os resultados do sorteio ordenados por ID do apartamento
+#     vagas_atribuidas = Sorteio.objects.exists()
+#     resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
+
+#     context = {
+#         'sorteio_iniciado': sorteio_iniciado,
+#         'vagas_atribuidas': vagas_atribuidas,
+#         'resultados_sorteio': resultados_sorteio,
+#         'horario_conclusao': request.session.get('horario_conclusao', ''),  # Exibe o horário de conclusão
+#     }
+
+#     return render(request, 'passaros/passaros_sorteio.html', context)
+
 def passaros_sorteio(request):
     if request.method == 'POST':
         # Marcar o sorteio como iniciado
@@ -28,11 +82,35 @@ def passaros_sorteio(request):
         apartamentos = list(Apartamento.objects.all())
         vagas_disponiveis = list(Vaga.objects.all())
 
-        # Embaralhar as listas para garantir aleatoriedade
+         # Pré-definir vagas para alguns apartamentos
+        apartamentos_com_vaga_predefinida = [
+                (545, 681), 
+                (277, 837), 
+                (552, 690), 
+                (211, 967), 
+                (459, 903), 
+                (544, 665), 
+                (60, 1056), 
+
+        ]
+
+        # Criar sorteios pré-definidos
+        for apartamento_id, vaga_id in apartamentos_com_vaga_predefinida:
+            apartamento = Apartamento.objects.get(id=apartamento_id)
+            vaga = Vaga.objects.get(id=vaga_id)
+            Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
+
+            # Remover o apartamento e a vaga das listas
+            if apartamento in apartamentos:
+                apartamentos.remove(apartamento)
+            if vaga in vagas_disponiveis:
+                vagas_disponiveis.remove(vaga)
+
+        # Embaralhar as listas restantes para garantir aleatoriedade
         random.shuffle(apartamentos)
         random.shuffle(vagas_disponiveis)
 
-        # Realizar o sorteio
+        # Realizar o sorteio para os apartamentos restantes
         for apartamento in apartamentos:
             # Filtrar vagas disponíveis apenas para o bloco do apartamento
             vagas_bloco = [vaga for vaga in vagas_disponiveis if vaga.bloco == apartamento.bloco]
@@ -62,6 +140,7 @@ def passaros_sorteio(request):
     }
 
     return render(request, 'passaros/passaros_sorteio.html', context)
+
 
 
 def passaros_excel(request):
