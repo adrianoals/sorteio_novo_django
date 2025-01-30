@@ -29,7 +29,6 @@ Bloco: 30; Apartamento: 13; Vaga: 50;
 Bloco: 31; Apartamento: 01; Vaga: 57;
 Bloco: 31; Apartamento: 04; Vaga: 58;
 
-
 """
 
 
