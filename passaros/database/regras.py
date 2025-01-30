@@ -14,6 +14,7 @@
 # VAGAS PNE
 """
 
+Bloco: 03; Apartamento: 04; Vaga: 595; (44, 1241)
 Bloco: 09; Apartamento: 24; Vaga: 648; (171, 1294)
 Bloco: 11; Apartamento: 04; Vaga: 221; (202, 868)
 Bloco: 15; Apartamento: 04; Vaga: 187; (281, 834)
