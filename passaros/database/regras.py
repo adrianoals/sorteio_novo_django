@@ -27,6 +27,7 @@ Bloco: 27; Apartamento: 12; Vaga: 29; (520, 676)
 Bloco: 28; Apartamento: 03; Vaga: 37; (533, 684)
 Bloco: 30; Apartamento: 11; Vaga: 49; (567, 696)
 Bloco: 30; Apartamento: 13; Vaga: 50; (569, 697)
+
 Bloco: 31; Apartamento: 01; Vaga: 57; (579, 704)
 Bloco: 31; Apartamento: 04; Vaga: 58; (582, 705)
 

@@ -3,7 +3,8 @@ from passaros.views import passaros_sorteio, passaros_excel, passaros_qrcode, pa
 
 urlpatterns = [
         # Rota para iniciar o sorteio
-        path('passaros-sorteio/', passaros_sorteio, name='passaros_sorteio'), 
+        # path('passaros-sorteio/', passaros_sorteio, name='passaros_sorteio'), 
+        
         # Rota para exportar os resultados do sorteio para um arquivo Excel
         path('passaros-excel', passaros_excel, name='passaros_excel'),
 
@@ -11,6 +12,6 @@ urlpatterns = [
         path('passaros-qrcode', passaros_qrcode, name='passaros_qrcode'),
         
         # Rota para zerar o sorteio
-        path('passaros-zerar/', passaros_zerar, name='passaros_zerar'),
+        # path('passaros-zerar/', passaros_zerar, name='passaros_zerar'),
 ]
 
