@@ -7,7 +7,7 @@ urlpatterns = [
     path('', include('sky_view.urls')), 
     path('', include('gran_vitta.urls')), 
     path('', include('passaros.urls')), 
-
+    path('', include('ventura.urls')), 
 ]
 
 
