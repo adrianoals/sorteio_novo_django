@@ -1,18 +1,14 @@
 body {
     background-color: #5E17EB;
     color: #FFFFFF;
-    /* background-image: url('/Front/Assets/images/silhueta_cidade_500x500.svg'); */
-    background-image: url('/static/assets/images/silhueta_cidade_1200x1200.png');
-    background-size: cover;  /* Faz com que a imagem de fundo cubra todo o corpo */
-    background-repeat: no-repeat;  /* Evita a repetição da imagem de fundo */
+    
+    /* background-image: url('/static/assets/images/silhueta_cidade_1200x1200.png');
+    background-size: cover;  
+    background-repeat: no-repeat;   */
 }
 
 
-/* h1 {
-    font-family: 'Kanit', sans-serif;
-    font-size: 100px;
-    font-weight: 600;
-} */
+
 
 
 /* Estilo dos links */
@@ -39,7 +35,6 @@ body {
     min-height: 250px;
     margin-left: 20px;
     margin-right: 20px;
-    /* background-image: url('/static/assets/images/teste.png'); */
 }
 
 #formulario-presenca {
@@ -112,13 +107,6 @@ body {
 .btn-blue:hover {
     background-color: #80D8DA; /* Mesma cor de fundo que o .btn-blue normal */
 }
-
-
-/* Definindo cores das setas*/
-/* .carousel-control-prev-icon,
-.carousel-control-next-icon {
-  filter: invert(1) grayscale(100%) brightness(200%);
-}    */
 
 
 .carousel-item img {
