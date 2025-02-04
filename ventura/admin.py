@@ -3,25 +3,25 @@ from .models import Bloco, Apartamento, Vaga, Sorteio
 
 @admin.register(Bloco)
 class BlocoAdmin(admin.ModelAdmin):
-    list_display = ("nome",)
-    search_fields = ("nome",)
+    list_display = ("id", "nome",)
+    search_fields = ("id", "nome",)
 
 @admin.register(Apartamento)
 class ApartamentoAdmin(admin.ModelAdmin):
-    list_display = ("numero_apartamento", "bloco", "presenca")
+    list_display = ("id", "numero_apartamento", "bloco", "presenca")
     list_filter = ("bloco", "presenca")
     search_fields = ("numero_apartamento",)
     list_editable = ("presenca",)
 
 @admin.register(Vaga)
 class VagaAdmin(admin.ModelAdmin):
-    list_display = ("vaga", "subsolo")
+    list_display = ("id", "vaga", "subsolo")
     list_filter = ("subsolo",)
     search_fields = ("vaga",)
 
 @admin.register(Sorteio)
 class SorteioAdmin(admin.ModelAdmin):
-    list_display = ("apartamento", "get_bloco", "vaga", "get_subsolo")
+    list_display = ("id","apartamento", "get_bloco", "vaga", "get_subsolo")
     list_filter = ("apartamento__bloco", "vaga__subsolo")
     search_fields = ("apartamento__numero_apartamento", "vaga__vaga")
 
