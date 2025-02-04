@@ -1,5 +1,5 @@
 from django.urls import path
-from ventura.views import ventura_aleatorio, excel_ventura, zerar_ventura, qrcode_ventura, ventura_inicio, ventura_presenca, ventura_filtrar, ventura_s_apartamento, ventura_final
+from ventura.views import ventura_aleatorio, excel_ventura, zerar_ventura, qrcode_ventura, ventura_presenca, ventura_filtrar, ventura_s_apartamento, ventura_final
 
 urlpatterns = [
         path('ventura-aleatorio', ventura_aleatorio, name='ventura_aleatorio'), 
