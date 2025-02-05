@@ -2,20 +2,23 @@
 {% load static %}
 {% block content %}
 
-    <div class="container">
-        <h1 class="fw-normal lh-1 text-center mb-5" id="titulo">SORTEIO DE APARTAMENTO!</h1>
-    </div>
+<div class="container">
+    <h1 class="fw-normal lh-1 text-center mb-5" id="titulo">SORTEIO DE APARTAMENTO!</h1>
+</div>
 
-    <main>
-        <div class="p-4" id="container-sorteio">
-            <h5 class="mt-3 mb-3 font_subtitle text-dark">SELECIONANDO OS APARTAMENTOS PRESENTES!</h5>
+<main>
+    <div class="p-4" id="container-sorteio">
+        <h5 class="mt-3 mb-3 font_subtitle text-dark">SELECIONANDO OS APARTAMENTOS PRESENTES!</h5>
 
-            <div class="d-flex justify-content-center">
-                <div id="loadingAnimation" style="display:none;">
-                    <img src="{% static 'assets/images/sorteio2.gif' %}" alt="Sorteio em andamento...">
-                </div>
+        <!-- Animação do sorteio (inicialmente oculta) -->
+        <div class="d-flex justify-content-center">
+            <div id="loadingAnimation" style="display:none;">
+                <img src="{% static 'assets/images/sorteio2.gif' %}" alt="Sorteio em andamento...">
             </div>
+        </div>
 
+        <!-- Todo o conteúdo do sorteio será ocultado temporariamente -->
+        <div id="conteudoSorteio">
             {% if messages %}
                 <ul class="messages text-dark">
                     {% for message in messages %}
@@ -28,9 +31,8 @@
                 <div class="alert alert-info mt-4" role="alert">
                     Sorteio dos presentes finalizado!
                 </div>
-                <a href="{% url 'ventura_final' %}" class="btn btn-primary rounded-pill mt-4 mb-4" id="botao-iniciar">Continuar Sorteio</a>
-
-                <a href="{% url 'ventura_presenca' %}" class="btn btn-primary rounded-pill mt-4 mb-4" id="botao-iniciar">Retornar Para Lista de Presença</a>
+                <a href="{% url 'ventura_final' %}" class="btn btn-primary rounded-pill mt-4 mb-4">Continuar Sorteio</a>
+                <a href="{% url 'ventura_presenca' %}" class="btn btn-primary rounded-pill mt-4 mb-4">Retornar Para Lista de Presença</a>
             {% endif %}
 
             {% if apartamentos_disponiveis %}
@@ -39,24 +41,22 @@
                     <input type="hidden" name="realizar_sorteio" value="1">
                     <button type="submit" class="btn btn-primary rounded-pill mt-4 mb-4">Sortear</button>
                 </form>
-
-                
             {% endif %}
 
             {% if item_de_presenca %}
-                <div class="row g-3 mt-4" id="secaoPresenca">
+                <div class="row g-3 mt-4">
                     <div class="col-sm-3">
                         <label for="apartamento" class="form-label text-dark">Apartamento</label>
                         <input type="text" class="form-control" id="apartamento" value="{{ item_de_presenca.numero_apartamento }}" readonly>
                     </div>
 
                     <div class="col-sm-3">
-                        <label for="torre{{ forloop.counter }}" class="form-label text-dark">Torre</label>
-                        <input type="text" class="form-control" id="torre{{ forloop.counter }}" value="{{ item.bloco.nome }}" readonly>
+                        <label for="torre" class="form-label text-dark">Torre</label>
+                        <input type="text" class="form-control" id="torre" value="{{ item_de_presenca.bloco.nome }}" readonly>
                     </div>
 
                     <div class="col-sm-3">
-                        <form method="post" name="confirmar_vaga">
+                        <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="apartamento_id" value="{{ item_de_presenca.id }}">
                             <label for="vaga" class="form-label text-dark">Vaga</label>
@@ -71,8 +71,8 @@
                     </div>
                 </div>
             {% endif %}
-        </div>
-
-    </main>
+        </div> <!-- Fim do conteúdo a ser ocultado -->
+    </div>
+</main>
 
 {% endblock %}
