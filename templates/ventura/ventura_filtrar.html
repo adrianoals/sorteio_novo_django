@@ -30,6 +30,10 @@
                     <label for="apartamento{{ forloop.counter }}" class="form-label text-dark">Apartamento</label>
                     <input type="text" class="form-control" id="apartamento{{ forloop.counter }}" value="{{ item.numero_apartamento }}" readonly>
                 </div>
+                <div class="col-sm-2">
+                    <label for="torre{{ forloop.counter }}" class="form-label text-dark">Torre</label>
+                    <input type="text" class="form-control" id="torre{{ forloop.counter }}" value="{{ item.bloco.nome }}" readonly>
+                </div>
                 <div class="col-sm-3">
                     <label for="presenca{{ forloop.counter }}" class="form-label text-dark">Presença</label>
                     <input type="text" class="form-control" id="presenca{{ forloop.counter }}" value="{% if item.presenca %}Presente{% else %}Ausente{% endif %}" readonly>

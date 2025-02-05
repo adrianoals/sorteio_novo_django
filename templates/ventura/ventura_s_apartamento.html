@@ -51,6 +51,11 @@
                     </div>
 
                     <div class="col-sm-3">
+                        <label for="torre{{ forloop.counter }}" class="form-label text-dark">Torre</label>
+                        <input type="text" class="form-control" id="torre{{ forloop.counter }}" value="{{ item.bloco.nome }}" readonly>
+                    </div>
+
+                    <div class="col-sm-3">
                         <form method="post" name="confirmar_vaga">
                             {% csrf_token %}
                             <input type="hidden" name="apartamento_id" value="{{ item_de_presenca.id }}">
