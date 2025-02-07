@@ -64,7 +64,7 @@ def zerar_ventura(request):
 
 
 def excel_ventura(request):
-    caminho_modelo = 'static/assets/modelos/sorteio_ventura.xlsx'
+    caminho_modelo = 'static/assets/modelos/sorteioventura.xlsx'
 
     wb = load_workbook(caminho_modelo)
     ws = wb.active
@@ -73,12 +73,13 @@ def excel_ventura(request):
     resultados_sorteio_nc = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id').all()
 
     horario_conclusao_nc = request.session.get('horario_conclusao_nc', 'Horário não disponível')
-    ws['C8'] = f"Sorteio realizado em: {horario_conclusao_nc}"
+    ws['A8'] = f"Sorteio realizado em: {horario_conclusao_nc}"
 
     linha = 10
     for sorteio in resultados_sorteio_nc:
-        ws[f'C{linha}'] = sorteio.apartamento.numero_apartamento
-        ws[f'E{linha}'] = sorteio.vaga.vaga
+        ws[f'A{linha}'] = sorteio.apartamento.bloco.nome
+        ws[f'B{linha}'] = sorteio.apartamento.numero_apartamento
+        ws[f'C{linha}'] = sorteio.vaga.vaga
         linha += 1
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -175,6 +176,8 @@ def ventura_s_apartamento(request):
         'vagas_disponiveis': vagas_disponiveis,
         'item_de_presenca': item_de_presenca
     })
+
+
 
 
 @staff_member_required
