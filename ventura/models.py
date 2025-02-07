@@ -11,6 +11,7 @@ class Apartamento(models.Model):
     numero_apartamento = models.CharField(max_length=50)
     presenca = models.BooleanField(default=False)
     bloco = models.ForeignKey(Bloco, on_delete=models.CASCADE, related_name="apartamentos")  
+    prioridade = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.numero_apartamento} - {self.bloco.nome}"
@@ -18,10 +19,11 @@ class Apartamento(models.Model):
 
 class Vaga(models.Model):
     vaga = models.CharField(max_length=50, unique=True)
-    subsolo = models.CharField(max_length=20)  # Ex: "Subsolo 1", "Subsolo 2"
+    subsolo = models.CharField(max_length=20)
+    bloco = models.ForeignKey(Bloco, on_delete=models.SET_NULL, null=True, blank=True, related_name="vagas")  
 
     def __str__(self):
-        return f"Vaga {self.vaga} - {self.subsolo}"
+        return f"Vaga {self.vaga} - {self.subsolo} ({self.bloco.nome if self.bloco else 'Especial'})"
 
 
 class Sorteio(models.Model):
