@@ -1,28 +1,22 @@
-# python manage.py shell
-
+import os
+from django.core.management import call_command
 from django.db import connection
-from ventura.models import Sorteio, Apartamento, Vaga, Bloco
 
-# Exclui os registros de Sorteio primeiro (pois depende de Apartamento e Vaga)
-Sorteio.objects.all().delete()
-print("Todos os registros da tabela Sorteio foram excluídos.")
+app_name = "ventura"
 
-# Exclui os registros de Apartamento e Vaga
-Apartamento.objects.all().delete()
-print("Todos os registros da tabela Apartamento foram excluídos.")
-
-Vaga.objects.all().delete()
-print("Todos os registros da tabela Vaga foram excluídos.")
-
-# Exclui os registros de Bloco por último
-Bloco.objects.all().delete()
-print("Todos os registros da tabela Bloco foram excluídos.")
-
-
-# Remover as Tabelas do Banco de Dados
+# 1. Exclui as tabelas do app 'ventura' do banco de dados (removendo CASCADE)
 with connection.cursor() as cursor:
     cursor.execute("DROP TABLE IF EXISTS ventura_sorteio;")
     cursor.execute("DROP TABLE IF EXISTS ventura_apartamento;")
     cursor.execute("DROP TABLE IF EXISTS ventura_vaga;")
     cursor.execute("DROP TABLE IF EXISTS ventura_bloco;")
-    print("Tabelas do app 'ventura' removidas com sucesso!")
+
+print("✅ Todas as tabelas do app 'ventura' foram excluídas!")
+
+# 2. Exclui todas as migrações do app 'ventura', exceto __init__.py
+migrations_path = os.path.join("ventura", "migrations")
+if os.path.exists(migrations_path):
+    for file in os.listdir(migrations_path):
+        if file.endswith(".py") and file != "__init__.py":
+            os.remove(os.path.join(migrations_path, file))
+    print("✅ Todas as migrações do app 'ventura' foram excluídas!")
