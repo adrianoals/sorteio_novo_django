@@ -26,7 +26,7 @@ print("Apartamentos Torre 1 - Fortuna inseridos com sucesso!")
 
 from ventura.models import Bloco, Apartamento
 # Buscar o bloco "Torre 2 - Conquita"
-bloco, created = Bloco.objects.get_or_create(nome="Torre 2 - Conquita")
+bloco, created = Bloco.objects.get_or_create(nome="Torre 2 - Conquista")
 
 # Lista de apartamentos
 apartamentos_t2 = [
@@ -46,7 +46,7 @@ apartamentos_t2 = [
 for numero in apartamentos_t2:
     Apartamento.objects.get_or_create(numero_apartamento=numero, bloco=bloco)
 
-print("Apartamentos Torre 2 - Conquita inseridos com sucesso!")
+print("Apartamentos Torre 2 - Conquista inseridos com sucesso!")
 
 
 from ventura.models import Bloco, Apartamento
