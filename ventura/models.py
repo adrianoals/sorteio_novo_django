@@ -23,7 +23,7 @@ class Vaga(models.Model):
     bloco = models.ForeignKey(Bloco, on_delete=models.SET_NULL, null=True, blank=True, related_name="vagas")  
 
     def __str__(self):
-        return f"Vaga {self.vaga} - {self.subsolo} ({self.bloco.nome if self.bloco else 'Especial'})"
+        return f"Vaga {self.vaga} - {self.subsolo} ({self.bloco.nome if self.bloco else 'Torre 2 e Torre 3'})"
 
 
 class Sorteio(models.Model):

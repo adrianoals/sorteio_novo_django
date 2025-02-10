@@ -30,7 +30,7 @@ class VagaAdmin(admin.ModelAdmin):
     autocomplete_fields = ("bloco",)
 
     def get_bloco(self, obj):
-        return obj.bloco.nome if obj.bloco else "Especial"
+        return obj.bloco.nome if obj.bloco else "Torre 2 e Torre 3"
     get_bloco.admin_order_field = "bloco"
     get_bloco.short_description = "Bloco"
 
