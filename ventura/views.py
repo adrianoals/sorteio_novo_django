@@ -181,6 +181,7 @@ def ventura_filtrar(request):
 #         'item_de_presenca': item_de_presenca
 #     })
 
+
 from django.shortcuts import render, redirect
 from ventura.models import Apartamento, Vaga, Sorteio
 from django.contrib import messages
@@ -189,11 +190,15 @@ import random
 
 @staff_member_required
 def ventura_s_apartamento(request):
-    # Filtra apartamentos com presença confirmada e sem sorteio
+    # Filtra apartamentos disponíveis
     apartamentos_prioritarios = Apartamento.objects.filter(presenca=True, prioridade=True).exclude(sorteio__isnull=False)
     apartamentos_nao_prioritarios = Apartamento.objects.filter(presenca=True, prioridade=False).exclude(sorteio__isnull=False)
     
-    # Verifica se o sorteio foi finalizado (nenhum apartamento disponível)
+    # Lista de IDs dos 12 apartamentos específicos
+    apartamentos_especificos_ids = [223, 224, 229, 330, 235, 236, 345, 346, 351, 352, 357, 358]  # Substitua pelos IDs corretos
+    vagas_especificas_ids = [351, 352, 353, 354, 355, 356, 356, 357, 358, 359, 361, 362]  # Substitua pelos IDs corretos
+    
+    # Verifica se o sorteio foi finalizado
     sorteio_finalizado = not (apartamentos_prioritarios.exists() or apartamentos_nao_prioritarios.exists())
     item_de_presenca = None
 
@@ -211,8 +216,13 @@ def ventura_s_apartamento(request):
 
             messages.success(request, f'Apartamento {apartamento_escolhido.numero_apartamento} foi selecionado para atribuição de vaga.')
 
-            # Filtra vagas disponíveis do mesmo bloco que o apartamento sorteado
-            vagas_disponiveis = Vaga.objects.filter(sorteio__isnull=True, bloco=apartamento_escolhido.bloco)
+            # Verifica se o apartamento sorteado é um dos específicos
+            if apartamento_escolhido.id in apartamentos_especificos_ids:
+                # Filtra apenas as vagas específicas que ainda estão disponíveis
+                vagas_disponiveis = Vaga.objects.filter(id__in=vagas_especificas_ids, sorteio__isnull=True)
+            else:
+                # Filtra vagas disponíveis do mesmo bloco que o apartamento sorteado
+                vagas_disponiveis = Vaga.objects.filter(sorteio__isnull=True, bloco=apartamento_escolhido.bloco)
 
             # Renderiza a página com o apartamento sorteado e as vagas filtradas
             return render(request, 'ventura/ventura_s_apartamento.html', {
@@ -247,63 +257,6 @@ def ventura_s_apartamento(request):
 
 
 
-@staff_member_required
-def ventura_s_apartamento(request):
-    # Filtra apartamentos com presença confirmada e sem sorteio
-    apartamentos_prioritarios = Apartamento.objects.filter(presenca=True, prioridade=True).exclude(sorteio__isnull=False)
-    apartamentos_nao_prioritarios = Apartamento.objects.filter(presenca=True, prioridade=False).exclude(sorteio__isnull=False)
-    
-    # Verifica se o sorteio foi finalizado (nenhum apartamento disponível)
-    sorteio_finalizado = not (apartamentos_prioritarios.exists() or apartamentos_nao_prioritarios.exists())
-    item_de_presenca = None
-
-    if request.method == 'POST':
-        if 'realizar_sorteio' in request.POST:
-            if apartamentos_prioritarios.exists():
-                # Sorteia entre os apartamentos prioritários
-                apartamento_escolhido = random.choice(list(apartamentos_prioritarios))
-            elif apartamentos_nao_prioritarios.exists():
-                # Sorteia entre os apartamentos não prioritários
-                apartamento_escolhido = random.choice(list(apartamentos_nao_prioritarios))
-            else:
-                messages.error(request, 'Nenhum apartamento disponível para sorteio.')
-                return redirect('ventura_s_apartamento')
-
-            messages.success(request, f'Apartamento {apartamento_escolhido.numero_apartamento} foi selecionado para atribuição de vaga.')
-
-            # Filtra vagas disponíveis do mesmo bloco que o apartamento sorteado
-            vagas_disponiveis = Vaga.objects.filter(sorteio__isnull=True, bloco=apartamento_escolhido.bloco)
-
-            # Renderiza a página com o apartamento sorteado e as vagas filtradas
-            return render(request, 'ventura/ventura_s_apartamento.html', {
-                'sorteio_finalizado': sorteio_finalizado,
-                'apartamentos_disponiveis': apartamentos_prioritarios.union(apartamentos_nao_prioritarios),
-                'vagas_disponiveis': vagas_disponiveis,
-                'item_de_presenca': apartamento_escolhido
-            })
-
-        # Seção para associar a vaga ao apartamento sorteado
-        if 'vaga_selecionada' in request.POST and 'apartamento_id' in request.POST:
-            apartamento_id = request.POST.get('apartamento_id')
-            vaga_selecionada = request.POST.get('vaga_selecionada')
-
-            apartamento = Apartamento.objects.get(id=apartamento_id)
-            vaga = Vaga.objects.get(vaga=vaga_selecionada)
-
-            # Cria o sorteio associando o apartamento à vaga
-            novo_sorteio = Sorteio(apartamento=apartamento, vaga=vaga)
-            novo_sorteio.save()
-
-            messages.success(request, f'Vaga {vaga.vaga} foi confirmada para o apartamento {apartamento.numero_apartamento} com sucesso!')
-            return redirect('ventura_s_apartamento')
-
-    # Renderização inicial
-    return render(request, 'ventura/ventura_s_apartamento.html', {
-        'sorteio_finalizado': sorteio_finalizado,
-        'apartamentos_disponiveis': apartamentos_prioritarios.union(apartamentos_nao_prioritarios),
-        'vagas_disponiveis': Vaga.objects.filter(sorteio__isnull=True),
-        'item_de_presenca': item_de_presenca
-    })
 
 
 @staff_member_required
