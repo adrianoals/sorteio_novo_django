@@ -15,7 +15,7 @@
             {% csrf_token %}
             {% for item in lista_de_presenca %}
                 <div class="row g-3 mt-4">
-                    <div class="col-sm-3"></div>
+                    <div class="col-sm-2"></div>
                     <div class="col-sm-2">
                         <label for="apartamento{{ forloop.counter }}" class="form-label text-dark">Apartamento</label>
                         <input type="text" class="form-control" id="apartamento{{ forloop.counter }}" value="Unidade: {{ item.numero_apartamento }}" readonly>
@@ -36,7 +36,17 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-3"></div>
+                    <div class="col-sm-2 text-dark">
+                        <label class="form-label text-dark">Prioridade</label>
+                        <div class="d-flex">
+                            <div class="form-check form-inline">
+                                <input type="hidden" name="prioridade{{ item.id }}" value="False">
+                                <input class="form-check-input" type="checkbox" name="prioridade{{ item.id }}" value="True" id="prioridade-sim{{ forloop.counter }}" {% if item.prioridade == True %}checked{% endif %}>
+                                <label class="form-check-label" for="prioridade-sim{{ forloop.counter }}"> Prioridade</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-2"></div>
 
                 </div>
             {% endfor %}
