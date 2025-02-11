@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Apartamento, Vaga, Sorteio
+from .models import Apartamento, Vaga, Sorteio, Bloco
 from django.utils import timezone
 import random
 from django.contrib.admin.views.decorators import staff_member_required
@@ -91,17 +91,41 @@ def excel_ventura(request):
     return response
 
 
-def qrcode_ventura(request):
-    apartamentos_disponiveis = Apartamento.objects.all()  # Adiciona esta linha
-    numero_apartamento = request.GET.get('apartamento')
-    resultados_filtrados = None
-    if numero_apartamento:
-        resultados_filtrados = Sorteio.objects.filter(apartamento__numero_apartamento=numero_apartamento)
+# def qrcode_ventura(request):
+#     apartamentos_disponiveis = Apartamento.objects.all()  # Adiciona esta linha
+#     numero_apartamento = request.GET.get('apartamento')
+#     resultados_filtrados = None
+#     if numero_apartamento:
+#         resultados_filtrados = Sorteio.objects.filter(apartamento__numero_apartamento=numero_apartamento)
     
+#     return render(request, 'ventura/ventura_qrcode.html', {
+#         'resultados_filtrados': resultados_filtrados,
+#         'apartamento_selecionado': numero_apartamento,
+#         'apartamentos_disponiveis': apartamentos_disponiveis,  # Certifique-se de adicionar esta linha
+#     })
+
+
+def qrcode_ventura(request):
+    # Obter todos os blocos disponíveis
+    blocos_disponiveis = Bloco.objects.all().order_by('nome')
+
+    # Obter o bloco selecionado através do filtro (via GET)
+    nome_bloco = request.GET.get('bloco')
+    numero_apartamento = request.GET.get('apartamento')
+
+    # Inicializar apartamentos e resultados filtrados
+    apartamentos_disponiveis = Apartamento.objects.filter(bloco__nome=nome_bloco) if nome_bloco else None
+    resultados_filtrados = Sorteio.objects.filter(
+        apartamento__numero_apartamento=numero_apartamento,
+        apartamento__bloco__nome=nome_bloco
+    ) if numero_apartamento else None
+
     return render(request, 'ventura/ventura_qrcode.html', {
+        'blocos_disponiveis': blocos_disponiveis,
+        'apartamentos_disponiveis': apartamentos_disponiveis,
         'resultados_filtrados': resultados_filtrados,
+        'bloco_selecionado': nome_bloco,
         'apartamento_selecionado': numero_apartamento,
-        'apartamentos_disponiveis': apartamentos_disponiveis,  # Certifique-se de adicionar esta linha
     })
 
 
