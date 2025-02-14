@@ -80,6 +80,7 @@ def excel_ventura(request):
         ws[f'A{linha}'] = sorteio.apartamento.bloco.nome
         ws[f'B{linha}'] = sorteio.apartamento.numero_apartamento
         ws[f'C{linha}'] = sorteio.vaga.vaga
+        ws[f'D{linha}'] = sorteio.vaga.subsolo
         linha += 1
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
