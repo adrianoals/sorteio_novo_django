@@ -46,12 +46,12 @@
         
         <div class="text-center text-dark mt-5 mb-5">
             <h5>Sorteio finalizado {{ request.session.horario_conclusao_nc }}.</h5>
-            <a href="{% url 'excel_arthur' %}" class="btn btn-info mt-3">Exportar para Excel</a>
+            {% comment %} <a href="{% url 'excel_arthur' %}" class="btn btn-info mt-3">Exportar para Excel</a> {% endcomment %}
         </div>
-        <div class="text-center mt-5">
+        {% comment %} <div class="text-center mt-5">
             <img src="{% static '/assets/images/qrcodearthur.png' %}" alt="QR Code" style="max-width: 200px;"/>
             <p class="text-dark">Escaneie o QR Code para acessar seu resultado.</p>
-        </div>
+        </div> {% endcomment %}
         {% endif %}
     </div>
 </main>
