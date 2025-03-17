@@ -51,11 +51,6 @@
                     </div>
 
                     <div class="col-sm-3">
-                        <label for="torre" class="form-label text-dark">Torre</label>
-                        <input type="text" class="form-control" id="torre" value="{{ item_de_presenca.bloco.nome }}" readonly>
-                    </div>
-
-                    <div class="col-sm-3">
                         <form method="post">
                             {% csrf_token %}
                             <input type="hidden" name="apartamento_id" value="{{ item_de_presenca.id }}">
