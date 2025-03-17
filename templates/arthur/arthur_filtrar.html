@@ -1,0 +1,59 @@
+{% extends 'sorteio_novo/base_sorteio.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container">
+    <h1 class="fw-normal lh-1 text-center mb-5" id="titulo">Lista de presença!</h1>
+</div>
+
+<main>
+    <div class="p-4" id="container-sorteio">
+        <h5 class="mt-3 mb-3 font_subtitle text-dark">LISTA PRESENÇA CONFIRMADA:</h5>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-check">
+                <label class="form-check-label text-dark" for="presentesCheck">Presentes</label>
+                <input class="form-check-input" type="checkbox" name="presentes" id="presentesCheck" {% if 'presentes' in request.POST %}checked{% endif %}>
+            </div>
+            <div class="form-check">
+                <label class="form-check-label text-dark" for="ausentesCheck">Ausentes</label>
+                <input class="form-check-input" type="checkbox" name="ausentes" id="ausentesCheck" {% if 'ausentes' in request.POST %}checked{% endif %}>
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Filtrar</button>
+        </form>
+        
+        {% for item in lista_de_presenca %}
+
+            <div class="row g-3">
+                <div class="col-sm-3">
+                    <label for="apartamento{{ forloop.counter }}" class="form-label text-dark">Apartamento</label>
+                    <input type="text" class="form-control" id="apartamento{{ forloop.counter }}" value="{{ item.numero_apartamento }}" readonly>
+                </div>
+
+                <div class="col-sm-3">
+                    <label for="presenca{{ forloop.counter }}" class="form-label text-dark">Presença</label>
+                    <input type="text" class="form-control" id="presenca{{ forloop.counter }}" value="{% if item.presenca %}Presente{% else %}Ausente{% endif %}" readonly>
+                </div>
+            </div>
+            
+        {% endfor %}
+
+        <div>
+            <!-- Link para a página tipo_sorteio.html -->
+            <a href="{% url 'arthur_s_apartamento' %}" class="btn btn-primary rounded-pill mt-4">Continuar Sorteio</a>
+
+        </div>
+
+
+    </div>
+
+
+
+
+
+</main>
+
+{% endblock %}
+
+

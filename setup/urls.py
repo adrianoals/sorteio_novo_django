@@ -8,6 +8,7 @@ urlpatterns = [
     path('', include('gran_vitta.urls')), 
     path('', include('passaros.urls')), 
     path('', include('ventura.urls')), 
+    path('', include('arthur.urls')), 
 ]
 
 
