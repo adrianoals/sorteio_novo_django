@@ -4,11 +4,6 @@ from django.utils import timezone
 import random
 from django.contrib.admin.views.decorators import staff_member_required
 
-# Excel
-from openpyxl import load_workbook
-from django.http import HttpResponse
-from django.utils import timezone
-from django.contrib import messages
 
 
 @staff_member_required
@@ -63,6 +58,12 @@ def zerar_arthur(request):
         return render(request, 'arthur/arthur_zerar.html')
 
 
+# Excel
+from openpyxl import load_workbook
+from django.http import HttpResponse
+from django.utils import timezone
+from django.contrib import messages
+
 def excel_arthur(request):
     caminho_modelo = 'static/assets/modelos/sorteioarthur.xlsx'
 
@@ -75,9 +76,9 @@ def excel_arthur(request):
     horario_conclusao_nc = request.session.get('horario_conclusao_nc', 'Horário não disponível')
     ws['A8'] = f"Sorteio realizado em: {horario_conclusao_nc}"
 
-    linha = 10
+    linha = 11
     for sorteio in resultados_sorteio_nc:
-        ws[f'A{linha}'] = sorteio.apartamento.bloco.nome
+        ws[f'A{linha}'] = sorteio.apartamento.numero_apartamento
         ws[f'B{linha}'] = sorteio.vaga.vaga
         linha += 1
 
@@ -88,7 +89,6 @@ def excel_arthur(request):
     wb.save(response)
 
     return response
-
 
 
 def qrcode_arthur(request):
