@@ -64,7 +64,7 @@ def zerar_ventura(request):
 
 
 def excel_ventura(request):
-    caminho_modelo = 'static/assets/modelos/sorteioventura.xlsx'
+    caminho_modelo = 'static/assets/modelos/sorteiounique.xlsx'
 
     wb = load_workbook(caminho_modelo)
     ws = wb.active
@@ -286,3 +286,46 @@ def ventura_final(request):
             'vagas_atribuidas_completas': vagas_atribuidas_completas
         })
 
+
+# def unique_qrcode(request):
+#     # Obter todos os apartamentos para preencher o dropdown
+#     apartamentos_disponiveis = Apartamento.objects.all()
+    
+#     # Obter o apartamento selecionado através do filtro (via GET)
+#     numero_apartamento = request.GET.get('apartamento')
+
+#     # Inicializar a variável de resultados filtrados como uma lista vazia
+#     resultados_filtrados = []
+
+#     # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
+#     if numero_apartamento:
+#         # Buscar os sorteios para o apartamento selecionado
+#         resultados_filtrados = Sorteio.objects.filter(apartamento__numero_apartamento=numero_apartamento)
+
+
+#     return render(request, 'ventura/unique_qrcode.html', {
+#         'resultados_filtrados': resultados_filtrados,
+#         'apartamento_selecionado': numero_apartamento,
+#         'apartamentos_disponiveis': apartamentos_disponiveis,
+#     })
+
+
+def unique_qrcode(request):
+    # Obter todos os apartamentos para preencher o dropdown
+    apartamentos_disponiveis = Apartamento.objects.all()
+    
+    # Obter o apartamento selecionado através do filtro (via GET)
+    numero_apartamento = request.GET.get('apartamento')
+
+    # Inicializar a variável de resultados filtrados como uma lista vazia
+    resultados_filtrados = []
+
+    # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
+    if numero_apartamento:
+        resultados_filtrados = Sorteio.objects.filter(apartamento__numero_apartamento=numero_apartamento)
+
+    return render(request, 'ventura/unique_qrcode.html', {
+        'resultados_filtrados': resultados_filtrados,
+        'apartamento_selecionado': numero_apartamento,
+        'apartamentos_disponiveis': apartamentos_disponiveis,
+    })

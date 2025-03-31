@@ -21,9 +21,9 @@ function revelarLinhasProgressivamente() {
                         loadingContainer.style.display = 'none';
                         // Opcional: rola para o fim da página após o último elemento ser revelado
                         document.body.scrollIntoView({behavior: 'smooth', block: 'end'});
-                    }, 5000); // Aguarda um pouco mais para garantir que a animação de carregamento desapareça suavemente
+                    }, 500); // Aguarda um pouco mais para garantir que a animação de carregamento desapareça suavemente
                 }
-            }, index * 5000); // Ajusta para 250ms entre a revelação de cada linha para tornar a animação mais rápida
+            }, index * 250); // Ajusta para 250ms entre a revelação de cada linha para tornar a animação mais rápida
         });
     } else {
         loadingContainer.style.display = 'none';
@@ -59,4 +59,5 @@ function revelarLinhasProgressivamente() {
 //         loadingContainer.style.display = 'none';
 //     }
 // }
+
 
