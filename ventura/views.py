@@ -92,19 +92,6 @@ def excel_ventura(request):
     return response
 
 
-# def qrcode_ventura(request):
-#     apartamentos_disponiveis = Apartamento.objects.all()  # Adiciona esta linha
-#     numero_apartamento = request.GET.get('apartamento')
-#     resultados_filtrados = None
-#     if numero_apartamento:
-#         resultados_filtrados = Sorteio.objects.filter(apartamento__numero_apartamento=numero_apartamento)
-    
-#     return render(request, 'ventura/ventura_qrcode.html', {
-#         'resultados_filtrados': resultados_filtrados,
-#         'apartamento_selecionado': numero_apartamento,
-#         'apartamentos_disponiveis': apartamentos_disponiveis,  # Certifique-se de adicionar esta linha
-#     })
-
 
 def qrcode_ventura(request):
     # Obter todos os blocos disponíveis
@@ -157,54 +144,6 @@ def ventura_filtrar(request):
             lista_de_presenca = lista_de_presenca.filter(presenca=False)
     return render(request, 'ventura/ventura_filtrar.html', {"lista_de_presenca": lista_de_presenca})
 
-
-# @staff_member_required
-# def ventura_s_apartamento(request):
-#     # Seleciona todos os apartamentos com presença confirmada e que ainda não têm vaga sorteada
-#     apartamentos_disponiveis = Apartamento.objects.filter(presenca=True).exclude(sorteio__apartamento__isnull=False)
-#     # Seleciona todas as vagas que ainda não estão em um sorteio
-#     vagas_disponiveis = Vaga.objects.exclude(sorteio__vaga__isnull=False)
-
-#     sorteio_finalizado = not apartamentos_disponiveis.exists() or not vagas_disponiveis.exists()
-#     item_de_presenca = None  # Inicializa a variável
-
-#     if request.method == 'POST':
-#         if 'realizar_sorteio' in request.POST and apartamentos_disponiveis.exists():
-#             # Sorteio de um apartamento aleatório
-#             apartamento_escolhido = random.choice(list(apartamentos_disponiveis))
-#             messages.success(request, f'Apartamento {apartamento_escolhido.numero_apartamento} foi selecionado para atribuição de vaga. Escolha a vaga agora.')
-
-#             # Armazena o apartamento escolhido para permitir seleção de vaga
-#             item_de_presenca = apartamento_escolhido
-
-#             # Renderiza a página com o apartamento sorteado para escolha da vaga
-#             return render(request, 'ventura/ventura_s_apartamento.html', {
-#                 'sorteio_finalizado': sorteio_finalizado,
-#                 'apartamentos_disponiveis': apartamentos_disponiveis,
-#                 'vagas_disponiveis': vagas_disponiveis,
-#                 'item_de_presenca': item_de_presenca
-#             })
-
-#         # Seção para escolher vaga para o apartamento selecionado
-#         if 'vaga_selecionada' in request.POST and 'apartamento_id' in request.POST:
-#             apartamento_id = request.POST.get('apartamento_id')
-#             vaga_selecionada = request.POST.get('vaga_selecionada')
-#             apartamento = Apartamento.objects.get(id=apartamento_id)
-#             vaga = Vaga.objects.get(vaga=vaga_selecionada)
-
-#             # Cria um novo registro de sorteio associando o apartamento à vaga escolhida
-#             novo_sorteio = Sorteio(apartamento=apartamento, vaga=vaga)
-#             novo_sorteio.save()
-
-#             messages.success(request, f'Vaga {vaga.vaga} confirmada para o apartamento {apartamento.numero_apartamento} com sucesso!')
-#             return redirect('ventura_s_apartamento')
-
-#     return render(request, 'ventura/ventura_s_apartamento.html', {
-#         'sorteio_finalizado': sorteio_finalizado,
-#         'apartamentos_disponiveis': apartamentos_disponiveis,
-#         'vagas_disponiveis': vagas_disponiveis,
-#         'item_de_presenca': item_de_presenca
-#     })
 
 
 from django.shortcuts import render, redirect
@@ -279,111 +218,6 @@ def ventura_s_apartamento(request):
         'vagas_disponiveis': Vaga.objects.filter(sorteio__isnull=True),
         'item_de_presenca': item_de_presenca
     })
-
-
-# @staff_member_required
-# def ventura_final(request):
-#     if request.method == 'POST':
-#         # Limpar registros anteriores de sorteio para apartamentos com presença False
-#         Sorteio.objects.filter(apartamento__presenca=False).delete()
-        
-#         # Obter apartamentos com presença False e todas as vagas disponíveis, excluindo as já atribuídas
-#         apartamentos = list(Apartamento.objects.filter(presenca=False))
-#         vagas_disponiveis = list(Vaga.objects.exclude(id__in=Sorteio.objects.values_list('vaga_id', flat=True)))
-
-#         # Verifica se há vagas suficientes para os apartamentos com presença False
-#         if len(vagas_disponiveis) >= len(apartamentos):
-#             random.shuffle(vagas_disponiveis)
-
-#             for apartamento in apartamentos:
-#                 vaga_selecionada = vagas_disponiveis.pop()
-#                 Sorteio.objects.create(
-#                     apartamento=apartamento, 
-#                     vaga=vaga_selecionada
-#                 )
-#         else:
-#             # Opção para lidar com a situação de não ter vagas suficientes
-#             pass
-        
-#         # Armazenar informações do sorteio na sessão
-#         request.session['sorteio_iniciado_nc'] = True
-#         request.session['horario_conclusao_nc'] = timezone.localtime().strftime("%d/%m/%Y às %Hh e %Mmin e %Ss")
-
-#         return redirect('ventura_final')
-    
-#     else:
-#         sorteio_iniciado_nc = request.session.get('sorteio_iniciado_nc', False)
-#         todos_apartamentos = Apartamento.objects.count()  # Conta todos os apartamentos registrados
-#         apartamentos_sorteio = Sorteio.objects.count()  # Conta todos os apartamentos com vagas atribuídas
-#         vagas_atribuidas_completas = todos_apartamentos == apartamentos_sorteio  # Verifica se todos têm vagas atribuídas
-
-#         resultados_sorteio_nc = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id').all()
-#         vagas_atribuidas_nc = resultados_sorteio_nc.exists()  # Verificar se existem resultados
-
-#         return render(request, 'ventura/ventura_final.html', {
-#             'resultados_sorteio_nc': resultados_sorteio_nc,
-#             'vagas_atribuidas_nc': vagas_atribuidas_nc,
-#             'sorteio_iniciado_nc': sorteio_iniciado_nc,
-#             'horario_conclusao_nc': request.session.get('horario_conclusao_nc', ''),
-#             'vagas_atribuidas_completas': vagas_atribuidas_completas  # Adiciona essa variável ao contexto
-#         })
-
-
-# 2
-# from django.shortcuts import render, redirect
-# from ventura.models import Apartamento, Vaga, Sorteio
-# from django.contrib import messages
-# from django.contrib.admin.views.decorators import staff_member_required
-# from django.utils import timezone
-# import random
-
-# @staff_member_required
-# def ventura_final(request):
-#     if request.method == 'POST':
-#         # Limpar registros anteriores de sorteio para apartamentos com presença False
-#         Sorteio.objects.filter(apartamento__presenca=False).delete()
-
-#         # Obter apartamentos com presença False
-#         apartamentos = list(Apartamento.objects.filter(presenca=False))
-        
-#         # Obter todas as vagas disponíveis, excluindo as já atribuídas
-#         vagas_disponiveis = Vaga.objects.exclude(id__in=Sorteio.objects.values_list('vaga_id', flat=True))
-
-#         for apartamento in apartamentos:
-#             # Filtrar vagas disponíveis do mesmo bloco do apartamento
-#             vagas_mesmo_bloco = list(vagas_disponiveis.filter(bloco=apartamento.bloco))
-            
-#             if vagas_mesmo_bloco:
-#                 random.shuffle(vagas_mesmo_bloco)  # Embaralha as vagas do mesmo bloco
-#                 vaga_selecionada = vagas_mesmo_bloco.pop()  # Seleciona uma vaga aleatória
-#                 Sorteio.objects.create(apartamento=apartamento, vaga=vaga_selecionada)
-#                 vagas_disponiveis = vagas_disponiveis.exclude(id=vaga_selecionada.id)  # Remove a vaga atribuída
-#             else:
-#                 messages.warning(request, f"Não há vagas disponíveis para o apartamento {apartamento.numero_apartamento} no bloco {apartamento.bloco}.")
-
-#         # Armazenar informações do sorteio na sessão
-#         request.session['sorteio_iniciado_nc'] = True
-#         request.session['horario_conclusao_nc'] = timezone.localtime().strftime("%d/%m/%Y às %Hh e %Mmin e %Ss")
-
-#         return redirect('ventura_final')
-    
-#     else:
-#         sorteio_iniciado_nc = request.session.get('sorteio_iniciado_nc', False)
-#         todos_apartamentos = Apartamento.objects.count()  # Conta todos os apartamentos registrados
-#         apartamentos_sorteio = Sorteio.objects.count()  # Conta todos os apartamentos com vagas atribuídas
-#         vagas_atribuidas_completas = todos_apartamentos == apartamentos_sorteio  # Verifica se todos têm vagas atribuídas
-
-#         resultados_sorteio_nc = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id').all()
-#         vagas_atribuidas_nc = resultados_sorteio_nc.exists()  # Verificar se existem resultados
-
-#         return render(request, 'ventura/ventura_final.html', {
-#             'resultados_sorteio_nc': resultados_sorteio_nc,
-#             'vagas_atribuidas_nc': vagas_atribuidas_nc,
-#             'sorteio_iniciado_nc': sorteio_iniciado_nc,
-#             'horario_conclusao_nc': request.session.get('horario_conclusao_nc', ''),
-#             'vagas_atribuidas_completas': vagas_atribuidas_completas
-#         })
-
 
 
 from django.shortcuts import render, redirect
