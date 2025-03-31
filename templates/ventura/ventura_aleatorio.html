@@ -30,16 +30,27 @@
             <h2 class="text-center mb-4">Resultados do Sorteio</h2>
             {% for sorteio in resultados_sorteio_nc %}
             <div class="row g-3 mt-3 linha-apartamento">
-                <div class="col-sm-4">
+                <div class="col-sm-2"></div>
+                <div class="col-sm-2">
                     <label class="form-label text-dark">Apartamento</label>
                     <input type="text" class="form-control" value="{{ sorteio.apartamento.numero_apartamento }}" readonly>
                 </div>
-                <div class="col-sm-4">
-                    <label class="form-label text-dark">Vaga</label>
-                    <input type="text" class="form-control" value="{{ sorteio.vaga.vaga }}" readonly>
+                <div class="col-sm-2">
+                    <label class="form-label text-dark">Torre</label>
+                    <input type="text" class="form-control" value="{{ sorteio.apartamento.bloco }}" readonly>
                 </div>
+                <div class="col-sm-2">
+                    <label class="form-label text-dark">Vaga</label>
+                    <input type="text" class="form-control" value="Vaga: {{ sorteio.vaga.vaga }}" readonly>
+                </div>
+                <div class="col-sm-2">
+                    <label class="form-label text-dark">Subsolo</label>
+                    <input type="text" class="form-control" value="{{ sorteio.vaga.subsolo }}" readonly>
+                </div>
+                <div class="col-sm-2"></div>
             </div>
             {% endfor %}
+            
         </div>
         {% elif sorteio_iniciado_nc %}
         <div class="text-center mt-5">
@@ -53,7 +64,7 @@
                 <a href="{% url 'excel_ventura' %}" class="btn btn-info mt-3">Exportar para Excel</a>
             </div>
             <div class="text-center mt-5">
-                <img src="{% static '/assets/images/ventura_qrcode.png' %}" alt="QR Code" style="max-width: 200px;"/>
+                <img src="{% static '/assets/images/qrcodeunique.png' %}" alt="QR Code" style="max-width: 200px;"/>
                 <p class="text-dark">Escaneie o QR Code para acessar seu resultado.</p>
             </div>
         {% endif %}
