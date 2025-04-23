@@ -4,21 +4,21 @@
 {% block content %}
 <div class="max-w-4xl mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-lg p-6">
-        <h1 class="text-4xl font-kanit font-semibold text-center text-gray-800 mb-8">Sorteio de Vagas - Condomínio Alvorada</h1>
+        <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">Sorteio de Vagas - Condomínio Alvorada</h1>
 
-        <h5 class="text-xl font-montserrat text-gray-700 text-center mb-6">Clique aqui para iniciar o sorteio</h5>
+        <h5 class="text-xl font-light text-gray-600 text-center mb-6">Clique aqui para iniciar o sorteio</h5>
         
         <div class="text-center">
             <form method="post" action="{% url 'alvorada_sorteio' %}">
                 {% csrf_token %}
-                <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105">
+                <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105">
                     Iniciar Sorteio
                 </button>
             </form>
         </div>
 
         {% if vagas_atribuidas %}
-        <div class="loading-container" id="loadingContainer">                          
+        <div class="loading-container bg-gradient-to-b from-[#5E17EB]/5 to-white/80 backdrop-blur-sm rounded-xl p-8" id="loadingContainer">                          
             <div class="loading">
                 <img src="{% static '/assets/images/sorteio2.gif' %}" alt="Sorteando..." class="loading-gif mt-5">
             </div>
@@ -26,27 +26,27 @@
         {% endif %}
 
         {% if resultados_sorteio %}
-        <div class="mt-8">
-            <h2 class="text-2xl font-kanit text-gray-800 text-center mb-6">Resultados do Sorteio</h2>
+        <div class="mt-12">
+            <h2 class="text-2xl font-light tracking-tight text-gray-900 text-center mb-8">Resultados do Sorteio</h2>
             <div class="space-y-4">
                 {% for sorteio in resultados_sorteio %}
                 <div class="linha-apartamento bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300 opacity-0">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-1">Apartamento</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900" value="{{ sorteio.apartamento.numero }}" readonly>
+                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Apartamento</label>
+                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.apartamento.numero }}" readonly>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-1">Vaga</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900" value="{{ sorteio.vaga.numero }}" readonly>
+                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Vaga</label>
+                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.numero }}" readonly>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-1">Subsolo</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900" value="{{ sorteio.vaga.subsolo }}" readonly>
+                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Subsolo</label>
+                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.subsolo }}" readonly>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-900 mb-1">Tipo da Vaga</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900" value="{{ sorteio.vaga.tipo_vaga }}" readonly>
+                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Tipo da Vaga</label>
+                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.tipo_vaga }}" readonly>
                         </div>
                     </div>
                 </div>
@@ -55,21 +55,21 @@
         </div>
         {% elif sorteio_iniciado %}
         <div class="text-center mt-8">
-            <p class="text-gray-600">Nenhum resultado disponível. O sorteio está em andamento.</p>
+            <p class="text-gray-500 font-light">Nenhum resultado disponível. O sorteio está em andamento.</p>
         </div>
         {% endif %}
 
         {% if vagas_atribuidas %}
-        <div class="text-center mt-8">
-            <h5 class="text-lg text-gray-700 mb-4">Sorteio finalizado {{ request.session.horario_conclusao }}.</h5>
-            <a href="{% url 'alvorada_excel' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-bold py-2 px-6 rounded-lg transition duration-300 transform hover:scale-105">
+        <div class="text-center mt-12">
+            <h5 class="text-lg font-light text-gray-600 mb-4">Sorteio finalizado {{ request.session.horario_conclusao }}.</h5>
+            <a href="{% url 'alvorada_excel' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
                 Exportar para Excel
             </a>
         </div>
             
-        <div class="text-center mt-8">
+        <div class="text-center mt-12">
             <img src="{% static '/assets/images/qrcode_coelhos.png' %}" alt="QR Code" class="mx-auto max-w-[200px]"/>
-            <p class="text-gray-600 mt-2">Escaneie o QR Code para acessar seu resultado.</p>
+            <p class="text-gray-500 font-light mt-4">Escaneie o QR Code para acessar seu resultado.</p>
         </div>
         {% endif %}
     </div>
