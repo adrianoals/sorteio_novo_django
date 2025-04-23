@@ -56,10 +56,6 @@ body {
 }
 
 
-footer{
-    background-image: url('/static/assets/images/silhueta_cidade_500x500.svg');
-}
-
 .linha-apartamento {
     opacity: 0; /* Esconde as linhas inicialmente */
     transition: opacity 1s ease-in-out; /* Transição suave da opacidade */

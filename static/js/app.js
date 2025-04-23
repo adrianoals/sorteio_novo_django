@@ -10,6 +10,7 @@ function revelarLinhasProgressivamente() {
         linhas.forEach((linha, index) => {
             setTimeout(() => {
                 linha.style.opacity = 1; // Faz a linha aparecer gradualmente
+                linha.style.transform = 'translateY(0)'; // Adiciona um efeito de deslizamento
 
                 // Rola a página até a linha que acabou de se tornar visível
                 linha.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -21,9 +22,9 @@ function revelarLinhasProgressivamente() {
                         loadingContainer.style.display = 'none';
                         // Opcional: rola para o fim da página após o último elemento ser revelado
                         document.body.scrollIntoView({behavior: 'smooth', block: 'end'});
-                    }, 500); // Aguarda um pouco mais para garantir que a animação de carregamento desapareça suavemente
+                    }, 1000); // Aumentei o tempo para 1000ms para dar mais tempo para a animação
                 }
-            }, index * 250); // Ajusta para 250ms entre a revelação de cada linha para tornar a animação mais rápida
+            }, index * 500); // Aumentei o intervalo para 500ms para tornar a animação mais suave
         });
     } else {
         loadingContainer.style.display = 'none';

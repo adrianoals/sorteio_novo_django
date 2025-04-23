@@ -25,12 +25,6 @@ h1 {
     z-index: 10; 
     /* Para garantir que o conteúdo sobreposto seja visível */
     background-color: rgba(94, 23, 235, 0.9);
-
-    
-    /* background-image: url(/Front/Assets/images/silhueta_cidade_1200x150.png);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat; */
    
 } 
 
@@ -81,28 +75,14 @@ h1 {
     color: #5E17EB;
     background-color: #FFFFFF;
 
-    /*  
-    background-image: url(/Front/Assets/images/silhueta_cidade_1200x150_branco.png);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    */
-    
-
 }
 
 #container-3 { 
     margin: 0;         
     padding: 0;
     min-height: 500px;
-    
-    /* color: white;
-    background-color: #5E17EB; */
-    
     color: #5E17EB; 
     background-color: white;
-    
-    /* background-image: url(/Front/Assets/images/vagas.png); */
 }
 
 #container-4 { 
@@ -112,25 +92,15 @@ h1 {
      
     color: white;
     background-color: #5E17EB; 
-    
-    /* color: #5E17EB;
-    background-color: white; */
-    
-    /* background-image: url(/Front/Assets/images/vagas.png); */
 }
 
 #container-5 { 
     margin: 0;         
     padding: 0;
     min-height: 500px;
-/*     
-    color: white;
-    background-color: #5E17EB; */
     
     color: #5E17EB;
     background-color: white;
-    
-    /* background-image: url(/Front/Assets/images/vagas.png); */
 }
 
 #container-6 { 
@@ -141,7 +111,6 @@ h1 {
     color: white;
     background-color: #5E17EB;
     
-    /* background-image: url(/Front/Assets/images/vagas.png); */
 }
 
 #container-solucoes { 
@@ -197,9 +166,7 @@ h1 {
     }
 }
 
-footer{
-    background-image: url('/static/assets/images/silhueta_cidade_1200x1200.png');
-}
+
 
 
 

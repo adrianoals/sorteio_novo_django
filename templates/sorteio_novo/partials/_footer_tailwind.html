@@ -1,0 +1,32 @@
+{% load static %}
+
+<footer class="bg-[#5E17EB]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-12 items-center">
+            <!-- Telefone -->
+            <div class="text-center md:text-left">
+                <h5 class="text-lg font-semibold text-white mb-3">Telefone</h5>
+                <p class="text-white/90 hover:text-white transition-colors duration-300">(11) 94507-9207</p>
+            </div>
+
+            <!-- Email -->
+            <div class="text-center">
+                <h5 class="text-lg font-semibold text-white mb-3">Email</h5>
+                <p class="text-white/90 hover:text-white transition-colors duration-300">contato@sorteionovo.com.br</p>
+            </div>
+
+            <!-- Redes Sociais -->
+            <div class="text-center md:text-right">
+                <h5 class="text-lg font-semibold text-white mb-3">Social</h5>
+                <div class="flex justify-center md:justify-end space-x-6">
+                    <a href="#" class="text-white/90 hover:text-white transition-all duration-300 transform hover:scale-110">
+                        <img src="{% static '/assets/images/insta_icone.svg' %}" class="h-7 w-7" alt="Instagram">
+                    </a>
+                    <a href="#" class="text-white/90 hover:text-white transition-all duration-300 transform hover:scale-110">
+                        <img src="{% static '/assets/images/facebook_icone.svg' %}" class="h-7 w-7" alt="Facebook">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer> 
