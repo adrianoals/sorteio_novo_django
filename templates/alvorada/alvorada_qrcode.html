@@ -1,62 +1,49 @@
-{% extends 'sorteio_novo/base.html' %}
-
+{% extends 'sorteio_novo/base_sorteio.html' %}
+{% load static %}
 {% block content %}
-<div class="container mt-4">
-    <h1 class="text-center mb-4">QR Code - Condomínio Alvorada</h1>
 
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Selecione o Apartamento</h5>
-                    <form method="get" class="mb-4">
-                        <div class="form-group">
-                            <label for="apartamento">Apartamento:</label>
-                            <select name="apartamento" id="apartamento" class="form-control" onchange="this.form.submit()">
-                                <option value="">Selecione um apartamento</option>
-                                {% for apt in apartamentos_disponiveis %}
-                                <option value="{{ apt.numero }}" {% if apt.numero == apartamento_selecionado %}selected{% endif %}>
-                                    {{ apt.numero }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
+<div class="container">
+    <h1 class="fw-normal lh-1 text-center mb-5" id="titulo">RESULTADO SORTEIO!</h1>
+</div>
+
+<main>
+    <div class="p-4" id="container-sorteio">
+        <div class="row mt-5 margem-up">
+            <div class="col-md-3"></div> 
+
+            <div class="col-md-6 text-center text-dark">
+                <h1 class="mt-5 mb-5">Selecione seu apartamento!</h1>
+                <div class="filtro-apartamento text-center mb-5">
+                    <form method="get" action="{% url 'alvorada_qrcode' %}">
+                        <select id="numeroApartamento" name="apartamento" class="form-select filtro-destacado">
+                            <option value="" disabled {% if not apartamento_selecionado %}selected{% endif %}>Selecione seu apartamento</option>
+                            {% for apt in apartamentos_disponiveis %}
+                                {% if apt.numero == apartamento_selecionado %}
+                                    <option value="{{ apt.numero }}" selected>{{ apt.numero }}</option>
+                                {% else %}
+                                    <option value="{{ apt.numero }}">{{ apt.numero }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="btn btn-primary mt-3">Filtrar</button>
                     </form>
-
-                    {% if resultados_filtrados %}
-                    <div class="mt-4">
-                        <h5>Resultados do Sorteio</h5>
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Vaga</th>
-                                        <th>Subsolo</th>
-                                        <th>Tipo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for resultado in resultados_filtrados %}
-                                    <tr>
-                                        <td>{{ resultado.vaga.numero }}</td>
-                                        <td>{{ resultado.vaga.subsolo }}</td>
-                                        <td>{{ resultado.vaga.tipo_vaga }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
-        </div>
-    </div>
 
-    <div class="row mt-4">
-        <div class="col-12 text-center">
-            <a href="{% url 'alvorada_sorteio' %}" class="btn btn-primary">Voltar para Sorteio</a>
+            <div class="col-md-3"></div>
         </div>
+
+        {% if resultados_filtrados %}
+            <div class="resultados-filtrados mt-2 text-dark text-center">
+                <h3 class="text-center mb-4">Vagas para o apartamento: {{ apartamento_selecionado }}</h3>
+                {% for sorteio in resultados_filtrados %}
+                    <h5>
+                        {{ sorteio.vaga.numero }} - {{ sorteio.vaga.subsolo }}
+                    </h5>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
-</div>
+</main>
+
 {% endblock %} 
