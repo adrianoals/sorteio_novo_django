@@ -9,6 +9,7 @@ urlpatterns = [
     path('', include('passaros.urls')), 
     path('', include('ventura.urls')), 
     path('', include('arthur.urls')), 
+    path('', include('alvorada.urls')), 
 ]
 
 

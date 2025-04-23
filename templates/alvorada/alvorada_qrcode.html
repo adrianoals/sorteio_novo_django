@@ -1,0 +1,62 @@
+{% extends 'sorteio_novo/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">QR Code - Condomínio Alvorada</h1>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Selecione o Apartamento</h5>
+                    <form method="get" class="mb-4">
+                        <div class="form-group">
+                            <label for="apartamento">Apartamento:</label>
+                            <select name="apartamento" id="apartamento" class="form-control" onchange="this.form.submit()">
+                                <option value="">Selecione um apartamento</option>
+                                {% for apt in apartamentos_disponiveis %}
+                                <option value="{{ apt.numero }}" {% if apt.numero == apartamento_selecionado %}selected{% endif %}>
+                                    {{ apt.numero }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
+
+                    {% if resultados_filtrados %}
+                    <div class="mt-4">
+                        <h5>Resultados do Sorteio</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Vaga</th>
+                                        <th>Subsolo</th>
+                                        <th>Tipo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for resultado in resultados_filtrados %}
+                                    <tr>
+                                        <td>{{ resultado.vaga.numero }}</td>
+                                        <td>{{ resultado.vaga.subsolo }}</td>
+                                        <td>{{ resultado.vaga.tipo_vaga }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-12 text-center">
+            <a href="{% url 'alvorada_sorteio' %}" class="btn btn-primary">Voltar para Sorteio</a>
+        </div>
+    </div>
+</div>
+{% endblock %} 
