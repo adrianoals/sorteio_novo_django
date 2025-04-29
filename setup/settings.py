@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'ventura.apps.VenturaConfig',
     'arthur.apps.ArthurConfig',
     'alvorada.apps.AlvoradaConfig',
+    'splendore.apps.SplendoreConfig',
 ]
 
 MIDDLEWARE = [

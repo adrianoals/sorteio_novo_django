@@ -1,0 +1,60 @@
+{% extends 'sorteio_novo/base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-[100px]">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">Consulta de Vaga - Condomínio Splendore</h1>
+            <form method="get" class="max-w-md mx-auto">
+                <div class="mb-4 relative">
+                    <label for="apartamento" class="block text-sm font-medium tracking-wide text-black mb-2">Selecione seu apartamento:</label>
+                    <select name="apartamento" id="apartamento" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-black max-h-60 overflow-y-auto">
+                        <option value="" class="text-black">Selecione...</option>
+                        {% for apartamento in apartamentos_disponiveis %}
+                        <option value="{{ apartamento.numero }}" class="text-black" {% if apartamento.numero == apartamento_selecionado %}selected{% endif %}>
+                            Apartamento {{ apartamento.numero }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Consultar
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        {% if resultados_filtrados %}
+        <div class="mt-12">
+            <h2 class="text-2xl font-light tracking-tight text-gray-900 text-center mb-8">Resultado da Consulta</h2>
+            <div class="space-y-4">
+                {% for sorteio in resultados_filtrados %}
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Vaga</label>
+                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.numero }}" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Subsolo</label>
+                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.subsolo }}" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Tipo da Vaga</label>
+                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.tipo_vaga }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% elif apartamento_selecionado %}
+        <div class="text-center mt-8">
+            <p class="text-gray-500 font-light">Nenhum resultado encontrado para este apartamento.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
