@@ -19,43 +19,41 @@ def splendore_sorteio(request):
         apartamentos = list(Apartamento.objects.all())
         vagas = list(Vaga.objects.all())
 
-        # Separar apartamentos com direito a vaga dupla
-        apartamentos_vaga_dupla = [apt for apt in apartamentos if apt.direito_vaga_dupla]
-        apartamentos_vaga_simples = [apt for apt in apartamentos if not apt.direito_vaga_dupla]
-
-        # Separar vagas duplas e simples
-        vagas_duplas = [vaga for vaga in vagas if vaga.tipo_vaga == 'Dupla']
-        vagas_simples = [vaga for vaga in vagas if vaga.tipo_vaga == 'Simples']
+        # Agrupar apartamentos e vagas por torre
+        apartamentos_por_torre = {}
+        vagas_por_torre = {}
+        
+        for apartamento in apartamentos:
+            torre = apartamento.torre
+            if torre not in apartamentos_por_torre:
+                apartamentos_por_torre[torre] = []
+            apartamentos_por_torre[torre].append(apartamento)
+            
+        for vaga in vagas:
+            torre = vaga.torre
+            if torre not in vagas_por_torre:
+                vagas_por_torre[torre] = []
+            vagas_por_torre[torre].append(vaga)
 
         resultados_sorteio = []
 
-        # 1. Sorteio de apartamentos com direito a vaga dupla
-        random.shuffle(apartamentos_vaga_dupla)
-        random.shuffle(vagas_duplas)
+        # Realizar o sorteio para cada torre
+        for torre in range(1, 6):  # Torres de 1 a 5
+            torre_str = str(torre)
+            if torre_str in apartamentos_por_torre and torre_str in vagas_por_torre:
+                # Embaralhar apartamentos e vagas da mesma torre
+                apartamentos_torre = apartamentos_por_torre[torre_str]
+                vagas_torre = vagas_por_torre[torre_str]
+                
+                random.shuffle(apartamentos_torre)
+                random.shuffle(vagas_torre)
 
-        # Alocar vagas duplas para apartamentos com direito
-        for i in range(min(len(apartamentos_vaga_dupla), len(vagas_duplas))):
-            apartamento = apartamentos_vaga_dupla[i]
-            vaga = vagas_duplas[i]
-            sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
-            resultados_sorteio.append(sorteio)
-            vagas.remove(vaga)  # Remover vaga da lista total
-
-        # 2. Sorteio dos apartamentos restantes com as vagas restantes
-        # Juntar todos os apartamentos que ainda não receberam vaga
-        apartamentos_restantes = apartamentos_vaga_dupla[len(vagas_duplas):] + apartamentos_vaga_simples
-        vagas_restantes = vagas  # Todas as vagas que sobraram
-
-        # Embaralhar as listas
-        random.shuffle(apartamentos_restantes)
-        random.shuffle(vagas_restantes)
-
-        # Alocar vagas restantes para apartamentos restantes
-        for i in range(min(len(apartamentos_restantes), len(vagas_restantes))):
-            apartamento = apartamentos_restantes[i]
-            vaga = vagas_restantes[i]
-            sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
-            resultados_sorteio.append(sorteio)
+                # Alocar vagas para apartamentos da mesma torre
+                for i in range(min(len(apartamentos_torre), len(vagas_torre))):
+                    apartamento = apartamentos_torre[i]
+                    vaga = vagas_torre[i]
+                    sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
+                    resultados_sorteio.append(sorteio)
 
         # Marcar o sorteio como iniciado e armazenar o horário de conclusão
         request.session['sorteio_iniciado'] = True
@@ -96,10 +94,10 @@ def splendore_excel(request):
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
     for sorteio in resultados_sorteio:
-        ws[f'A{linha}'] = sorteio.apartamento.numero
-        ws[f'B{linha}'] = sorteio.vaga.numero
-        ws[f'C{linha}'] = f'Subsolo {sorteio.vaga.subsolo}'
-        ws[f'D{linha}'] = sorteio.vaga.tipo_vaga
+        ws[f'A{linha}'] = sorteio.apartamento.torre
+        ws[f'B{linha}'] = sorteio.apartamento.numero
+        ws[f'C{linha}'] = sorteio.vaga.numero
+        ws[f'D{linha}'] = sorteio.vaga.torre
         linha += 1
 
     # Configurar a resposta para o download do Excel
@@ -113,22 +111,31 @@ def splendore_excel(request):
 
 def splendore_qrcode(request):
     # Obter todos os apartamentos para preencher o dropdown
-    apartamentos_disponiveis = Apartamento.objects.all()
+    apartamentos_disponiveis = Apartamento.objects.all().order_by('torre', 'numero')
     
-    # Obter o apartamento selecionado através do filtro (via GET)
+    # Obter o apartamento e torre selecionados através do filtro (via GET)
     numero_apartamento = request.GET.get('apartamento')
+    torre_selecionada = request.GET.get('torre')
 
     # Inicializar a variável de resultados filtrados como uma lista vazia
     resultados_filtrados = []
 
     # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
     if numero_apartamento:
-        # Buscar os sorteios para o apartamento selecionado
-        resultados_filtrados = Sorteio.objects.filter(apartamento__numero=numero_apartamento)
+        # Construir o filtro base com o número do apartamento
+        filtro = {'apartamento__numero': numero_apartamento}
+        
+        # Se uma torre específica foi selecionada, adicionar ao filtro
+        if torre_selecionada:
+            filtro['apartamento__torre'] = torre_selecionada
+            
+        # Buscar os sorteios com os filtros aplicados
+        resultados_filtrados = Sorteio.objects.filter(**filtro)
 
     return render(request, 'splendore/splendore_qrcode.html', {
         'resultados_filtrados': resultados_filtrados,
         'apartamento_selecionado': numero_apartamento,
+        'torre_selecionada': torre_selecionada,
         'apartamentos_disponiveis': apartamentos_disponiveis,
     })
 

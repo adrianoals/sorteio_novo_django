@@ -2,76 +2,85 @@
 {% load static %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto px-4 py-8">
+<div class="max-w-4xl mx-auto mt-[100px]">
     <div class="bg-white rounded-lg shadow-lg p-6">
-        <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">Sorteio de Vagas - Condomínio Splendore</h1>
-
-        <h5 class="text-xl font-light text-gray-600 text-center mb-6">Clique aqui para iniciar o sorteio</h5>
-        
-        <div class="text-center">
-            <form method="post" action="{% url 'splendore_sorteio' %}">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">Sorteio de Vagas - Condomínio Splendore</h1>
+            
+            {% if not vagas_atribuidas %}
+            <form method="post" class="max-w-md mx-auto">
                 {% csrf_token %}
-                <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105">
-                    Iniciar Sorteio
-                </button>
+                <div class="text-center">
+                    <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Realizar Sorteio
+                    </button>
+                </div>
             </form>
-        </div>
+            {% endif %}
 
-        {% if vagas_atribuidas %}
-        <div class="loading-container bg-gradient-to-b from-[#5E17EB]/5 to-white/80 backdrop-blur-sm rounded-xl p-8" id="loadingContainer">                          
-            <div class="loading">
-                <img src="{% static '/assets/images/sorteio2.gif' %}" alt="Sorteando..." class="loading-gif mt-5">
+            {% if vagas_atribuidas %}
+            <div class="loading-container bg-gradient-to-b from-[#5E17EB]/5 to-white/80 backdrop-blur-sm rounded-xl p-8" id="loadingContainer">                          
+                <div class="loading">
+                    <img src="{% static '/assets/images/sorteio2.gif' %}" alt="Sorteando..." class="loading-gif mt-5">
+                </div>
             </div>
-        </div>
-        {% endif %}
+            {% endif %}
 
-        {% if resultados_sorteio %}
-        <div class="mt-12">
-            <h2 class="text-2xl font-light tracking-tight text-gray-900 text-center mb-8">Resultados do Sorteio</h2>
-            <div class="space-y-4">
-                {% for sorteio in resultados_sorteio %}
-                <div class="linha-apartamento bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300 opacity-0">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Apartamento</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.apartamento.numero }}" readonly>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Vaga</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.numero }}" readonly>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Subsolo</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.subsolo }}" readonly>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Tipo da Vaga</label>
-                            <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.tipo_vaga }}" readonly>
+            {% if resultados_sorteio %}
+            <div class="mt-12">
+                <h2 class="text-2xl font-light tracking-tight text-gray-900 text-center mb-8">Resultados do Sorteio</h2>
+                <div class="space-y-4">
+                    {% for sorteio in resultados_sorteio %}
+                    <div class="linha-apartamento bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300 opacity-0">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Torre do Apartamento</label>
+                                <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.apartamento.torre }}" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Apartamento</label>
+                                <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.apartamento.numero }}" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Vaga</label>
+                                <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.numero }}" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-1">Torre da Vaga</label>
+                                <input type="text" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900" value="{{ sorteio.vaga.torre }}" readonly>
+                            </div>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
-                {% endfor %}
             </div>
-        </div>
-        {% elif sorteio_iniciado %}
-        <div class="text-center mt-8">
-            <p class="text-gray-500 font-light">Nenhum resultado disponível. O sorteio está em andamento.</p>
-        </div>
-        {% endif %}
+            {% endif %}
 
-        {% if vagas_atribuidas %}
-        <div class="text-center mt-12">
-            <h5 class="text-lg font-light text-gray-600 mb-4">Sorteio finalizado {{ request.session.horario_conclusao }}.</h5>
-            <a href="{% url 'splendore_excel' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
-                Exportar para Excel
-            </a>
+            {% if vagas_atribuidas %}
+            <div class="text-center mt-12">
+                <h5 class="text-lg font-light text-gray-600 mb-4">Sorteio finalizado {{ horario_conclusao }}.</h5>
+                <a href="{% url 'splendore_excel' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    Exportar para Excel
+                </a>
+            </div>
+                
+            <div class="text-center mt-12">
+                <img src="{% static '/assets/images/qrcodesplendore.png' %}" alt="QR Code" class="mx-auto max-w-[200px]"/>
+                <p class="text-gray-500 font-light mt-4">Escaneie o QR Code para acessar seu resultado.</p>
+            </div>
+            {% endif %}
         </div>
-            
-        <div class="text-center mt-12">
-            <img src="{% static '/assets/images/qrcodesplendore.png' %}" alt="QR Code" class="mx-auto max-w-[200px]"/>
-            <p class="text-gray-500 font-light mt-4">Escaneie o QR Code para acessar seu resultado.</p>
-        </div>
-        {% endif %}
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const linhas = document.querySelectorAll('.linha-apartamento');
+    linhas.forEach((linha, index) => {
+        setTimeout(() => {
+            linha.style.opacity = '1';
+        }, index * 800);
+    });
+});
+</script>
 {% endblock %} 

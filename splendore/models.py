@@ -5,19 +5,18 @@ from django.db import models
 # Representa cada apartamento
 class Apartamento(models.Model):
     numero = models.CharField(max_length=5)
-    direito_vaga_dupla = models.BooleanField(default=False)
+    torre = models.CharField(max_length=2, default='A')
     
     def __str__(self):
-        return f"Apartamento {self.numero}"
+        return f"Apartamento {self.numero} - Torre {self.torre}"
 
-# Representa as vagas de garagem, incluindo simples e duplas
+# Representa as vagas de garagem
 class Vaga(models.Model):
-    numero = models.CharField(max_length=20) 
-    subsolo = models.CharField(max_length=10)
-    tipo_vaga = models.CharField(max_length=10, choices=[('Simples', 'Simples'), ('Dupla', 'Dupla')])
+    numero = models.CharField(max_length=20)
+    torre = models.CharField(max_length=2)
     
     def __str__(self):
-        return f"{self.numero} - {self.subsolo} ({self.tipo_vaga})"
+        return f"Vaga {self.numero} - Torre {self.torre}"
 
 # Armazena o resultado do sorteio, vinculando apartamentos a vagas
 class Sorteio(models.Model):

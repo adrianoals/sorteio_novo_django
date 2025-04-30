@@ -3,17 +3,18 @@ from .models import Apartamento, Vaga, Sorteio
 
 @admin.register(Apartamento)
 class ApartamentoAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'direito_vaga_dupla')
-    search_fields = ('numero',)
+    list_display = ('numero', 'torre')
+    search_fields = ('numero', 'torre')
+    list_filter = ('torre',)
 
 @admin.register(Vaga)
 class VagaAdmin(admin.ModelAdmin):
-    list_display = ('numero', 'subsolo', 'tipo_vaga')
-    list_filter = ('tipo_vaga', 'subsolo')
-    search_fields = ('numero',)
+    list_display = ('numero', 'torre')
+    list_filter = ('torre',)
+    search_fields = ('numero', 'torre')
 
 @admin.register(Sorteio)
 class SorteioAdmin(admin.ModelAdmin):
     list_display = ('apartamento', 'vaga', 'data_sorteio')
-    list_filter = ('data_sorteio',)
-    search_fields = ('apartamento__numero', 'vaga__numero')
+    list_filter = ('data_sorteio', 'apartamento__torre', 'vaga__torre')
+    search_fields = ('apartamento__numero', 'vaga__numero', 'apartamento__torre', 'vaga__torre')
