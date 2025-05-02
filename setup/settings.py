@@ -27,12 +27,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-# ALLOWED_HOSTS = []
+DEBUG = True
+ALLOWED_HOSTS = ["*",]
 
 
 # DEBUG = False
-ALLOWED_HOSTS = ['18.191.208.68', 'sorteio.sorteionovo.com.br', 'www.sorteio.sorteionovo.com.br']
+# ALLOWED_HOSTS = ['18.191.208.68', 'sorteio.sorteionovo.com.br', 'www.sorteio.sorteionovo.com.br']
 
 
 # Application definition
@@ -88,12 +88,25 @@ WSGI_APPLICATION = 'setup.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# SQLLITE 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# # POSTGRES
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', BASE_DIR / 'db.sqlite3'),
+#         'USER': os.getenv('POSTGRES_USER', ''),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#         'HOST': os.getenv('DB_HOST', 'db'),
+#         'PORT': os.getenv('DB_PORT', '5432'),
+#     }
+# }
 
 
 # Password validation
