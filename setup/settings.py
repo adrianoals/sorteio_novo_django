@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'arthur.apps.ArthurConfig',
     'alvorada.apps.AlvoradaConfig',
     'splendore.apps.SplendoreConfig',
+    'helborsorteio.apps.HelborsorteioConfig',
 ]
 
 MIDDLEWARE = [
