@@ -35,7 +35,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copia dependências e código da etapa builder
-COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
+COPY --from=builder /usr/local /usr/local
 COPY --from=builder /code /code
 
 # Copia e dá permissão ao entrypoint
