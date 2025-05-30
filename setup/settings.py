@@ -26,12 +26,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-ALLOWED_HOSTS = ["*",]
+# DEBUG = True
+# ALLOWED_HOSTS = ["*",]
 
-
+# AWS
 # DEBUG = False
 # ALLOWED_HOSTS = ['18.191.208.68', 'sorteio.sorteionovo.com.br', 'www.sorteio.sorteionovo.com.br']
+
+# HOSTINGER
+DEBUG = False
+ALLOWED_HOSTS = ['69.62.96.47', 'sn.sorteionovo.com.br', 'www.sn.sorteionovo.com.br']
 
 
 # Application definition
