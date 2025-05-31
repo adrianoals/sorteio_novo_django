@@ -26,16 +26,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-# ALLOWED_HOSTS = ["*",]
+DEBUG = True
+ALLOWED_HOSTS = ["*",]
 
 # AWS
 # DEBUG = False
 # ALLOWED_HOSTS = ['18.191.208.68', 'sorteio.sorteionovo.com.br', 'www.sorteio.sorteionovo.com.br']
 
 # HOSTINGER
-DEBUG = False
-ALLOWED_HOSTS = ['69.62.96.47', 'sn.sorteionovo.com.br', 'www.sn.sorteionovo.com.br']
+# DEBUG = False
+# ALLOWED_HOSTS = ['69.62.96.47', 'sn.sorteionovo.com.br', 'www.sn.sorteionovo.com.br']
+
+
+# Confiar no cabeçalho que o Traefik envia dizendo que é https
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+CSRF_TRUSTED_ORIGINS = ["https://sn.sorteionovo.com.br"]
 
 
 # Application definition
@@ -60,6 +67,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -158,11 +166,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'setup/static')
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# faz gzip + cache bust nos nomes dos arquivos
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
