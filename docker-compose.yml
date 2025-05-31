@@ -14,7 +14,7 @@ services:
       - "traefik.http.routers.sorteio.rule=Host(`sn.sorteionovo.com.br`)"
       - "traefik.http.routers.sorteio.entrypoints=websecure"
       - "traefik.http.routers.sorteio.tls=true"
-      - "traefik.http.routers.sorteio.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.sorteio.tls.certresolver=letsencryptresolver"
       - "traefik.http.services.sorteio.loadbalancer.server.port=8000"
 
 volumes:
