@@ -1,21 +1,26 @@
+version: "3.9"
+
 services:
   web:
+    image: sorteio_novo-web:latest
     build: .
-    container_name: sorteio_django
-    restart: unless-stopped
     env_file:
       - .env
     volumes:
       - static_volume:/code/static
     networks:
       - LeituraSorteioNet
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.sorteio.rule=Host(`sn.sorteionovo.com.br`)"
-      - "traefik.http.routers.sorteio.entrypoints=websecure"
-      - "traefik.http.routers.sorteio.tls=true"
-      - "traefik.http.routers.sorteio.tls.certresolver=letsencryptresolver"
-      - "traefik.http.services.sorteio.loadbalancer.server.port=8000"
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.sorteio.rule=Host(`sn.sorteionovo.com.br`)"
+        - "traefik.http.routers.sorteio.entrypoints=websecure"
+        - "traefik.http.routers.sorteio.tls=true"
+        - "traefik.http.routers.sorteio.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.sorteio.loadbalancer.server.port=8000"
+      restart_policy:
+        condition: on-failure
 
 volumes:
   static_volume:
