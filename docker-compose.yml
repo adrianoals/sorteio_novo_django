@@ -2,25 +2,36 @@ version: "3.9"
 
 services:
   web:
-    image: sorteio_novo-web:latest          
+    # use tag imutável publicada no registry
+    image: adrianoals/sorteio_novo-web:1.0.0
     env_file:
       - .env
     volumes:
-      - static_volume:/code/static
+      # ↔ STATIC_ROOT  →   /code/staticfiles
+      - static_volume:/code/staticfiles
     networks:
       - LeituraSorteioNet
 
     deploy:
-      restart_policy:  # restart no formato Swarm
+      replicas: 1
+      restart_policy:
         condition: on-failure
       labels:
         - traefik.enable=true
+        - traefik.docker.network=LeituraSorteioNet
         - traefik.http.routers.sorteio.rule=Host(`sn.sorteionovo.com.br`)
         - traefik.http.routers.sorteio.entrypoints=websecure
-        - traefik.http.routers.sorteio.tls=true
         - traefik.http.routers.sorteio.tls.certresolver=letsencryptresolver
         - traefik.http.services.sorteio.loadbalancer.server.port=8000
 
     command: >
-      gunicorn setup.wsgi:application --bind 0.0.0.0:8000
+      gunicorn setup.wsgi:application
+      --bind 0.0.0.0:8000
       --workers 3 --timeout 120
+
+volumes:
+  static_volume:
+
+networks:
+  LeituraSorteioNet:
+    external: true

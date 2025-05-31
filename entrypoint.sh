@@ -1,19 +1,20 @@
 #!/bin/sh
+set -e
 
-echo "Aguardando banco de dados Supabase ficar disponível..."
+echo "[entrypoint] Esperando Supabase em $DB_HOST:$DB_PORT…"
+i=0
+until nc -z "$DB_HOST" "$DB_PORT"; do
+  i=$((i+1))
+  [ "$i" -ge 15 ] && { echo "[entrypoint] Banco indisponível"; exit 1; }
+  sleep 2
+done
+echo "[entrypoint] Banco disponível ✔️"
 
-nc -z -v -w30 "$DB_HOST" "$DB_PORT"
-if [ $? -eq 0 ]; then
-  echo "Banco disponível"
-else
-  echo "Não foi possível conectar no banco ($DB_HOST:$DB_PORT)"
-  exit 1
-fi
-
-echo "Executando migrate..."
+echo "[entrypoint] Rodando migrations…"
 python manage.py migrate --noinput
 
-echo "Coletando arquivos estáticos..."
+echo "[entrypoint] Coletando arquivos estáticos…"
 python manage.py collectstatic --noinput
 
+echo "[entrypoint] Iniciando Gunicorn → $*"
 exec "$@"
