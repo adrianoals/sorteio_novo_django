@@ -8,7 +8,7 @@ services:
     volumes:
       - static_volume:/code/static
     networks:
-      - traefik
+      - LeituraSorteioNet
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.sorteio.rule=Host(`sn.sorteionovo.com.br`)"
@@ -21,5 +21,5 @@ volumes:
   static_volume:
 
 networks:
-  traefik:
+  LeituraSorteioNet:
     external: true
