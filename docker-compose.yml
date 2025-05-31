@@ -1,18 +1,26 @@
+version: "3.9"
+
 services:
   web:
-    image: sorteio_novo-web:latest
-    restart: unless-stopped
+    image: sorteio_novo-web:latest          
     env_file:
       - .env
     volumes:
       - static_volume:/code/static
     networks:
-      - traefik
+      - LeituraSorteioNet
+
     deploy:
+      restart_policy:  # restart no formato Swarm
+        condition: on-failure
       labels:
-        - "traefik.enable=true"
-        - "traefik.http.routers.sorteio.rule=Host(`sn.sorteionovo.com.br`)"
-        - "traefik.http.routers.sorteio.entrypoints=websecure"
-        - "traefik.http.routers.sorteio.tls=true"
-        - "traefik.http.routers.sorteio.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.sorteio.loadbalancer.server.port=8000"
+        - traefik.enable=true
+        - traefik.http.routers.sorteio.rule=Host(`sn.sorteionovo.com.br`)
+        - traefik.http.routers.sorteio.entrypoints=websecure
+        - traefik.http.routers.sorteio.tls=true
+        - traefik.http.routers.sorteio.tls.certresolver=letsencryptresolver
+        - traefik.http.services.sorteio.loadbalancer.server.port=8000
+
+    command: >
+      gunicorn setup.wsgi:application --bind 0.0.0.0:8000
+      --workers 3 --timeout 120
