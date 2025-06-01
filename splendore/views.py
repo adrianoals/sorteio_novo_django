@@ -6,18 +6,30 @@ from django.urls import reverse
 from openpyxl import load_workbook
 from io import BytesIO
 from .models import Apartamento, Vaga, Sorteio
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
 # View para realizar o sorteio
 def splendore_sorteio(request):
     if request.method == 'POST':
+        start_time = time.time()
+        
         # Limpar registros anteriores de sorteio
+        logger.info("Iniciando deleção dos registros anteriores")
+        delete_start = time.time()
         Sorteio.objects.all().delete()
+        logger.info(f"Deleção concluída em {time.time() - delete_start:.2f} segundos")
 
         # Obter todos os apartamentos e vagas
+        logger.info("Buscando apartamentos e vagas")
+        fetch_start = time.time()
         apartamentos = list(Apartamento.objects.all())
         vagas = list(Vaga.objects.all())
+        logger.info(f"Busca concluída em {time.time() - fetch_start:.2f} segundos")
 
         # Agrupar apartamentos e vagas por torre
         apartamentos_por_torre = {}
@@ -35,9 +47,13 @@ def splendore_sorteio(request):
                 vagas_por_torre[torre] = []
             vagas_por_torre[torre].append(vaga)
 
-        resultados_sorteio = []
+        # Lista para armazenar todos os objetos Sorteio
+        sorteios_para_criar = []
 
         # Realizar o sorteio para cada torre
+        logger.info("Iniciando criação dos registros de sorteio")
+        create_start = time.time()
+        
         for torre in range(1, 6):  # Torres de 1 a 5
             torre_str = str(torre)
             if torre_str in apartamentos_por_torre and torre_str in vagas_por_torre:
@@ -50,22 +66,30 @@ def splendore_sorteio(request):
 
                 # Alocar vagas para apartamentos da mesma torre
                 for i in range(min(len(apartamentos_torre), len(vagas_torre))):
-                    apartamento = apartamentos_torre[i]
-                    vaga = vagas_torre[i]
-                    sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
-                    resultados_sorteio.append(sorteio)
+                    sorteios_para_criar.append(
+                        Sorteio(
+                            apartamento=apartamentos_torre[i],
+                            vaga=vagas_torre[i]
+                        )
+                    )
+
+        # Criar todos os registros de uma vez usando bulk_create
+        Sorteio.objects.bulk_create(sorteios_para_criar)
+        logger.info(f"Criação dos registros concluída em {time.time() - create_start:.2f} segundos")
 
         # Marcar o sorteio como iniciado e armazenar o horário de conclusão
         request.session['sorteio_iniciado'] = True
         request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
 
+        logger.info(f"Sorteio total concluído em {time.time() - start_time:.2f} segundos")
+        
         # Redireciona para a mesma página após o sorteio
         return redirect(reverse('splendore_sorteio'))
 
     # Se o método for GET, exibe os resultados ou a interface de sorteio
     sorteio_iniciado = request.session.get('sorteio_iniciado', False)
     vagas_atribuidas = Sorteio.objects.exists()
-    resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
+    resultados_sorteio = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id') if vagas_atribuidas else None
 
     context = {
         'sorteio_iniciado': sorteio_iniciado,
