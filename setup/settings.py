@@ -194,3 +194,14 @@ EMAIL_HOST_PASSWORD = (os.getenv('EMAIL_HOST_PASSWORD'))
 
 
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {"class": "logging.StreamHandler"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "ERROR",       # sobe para WARNING / INFO depois
+    },
+}
