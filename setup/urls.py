@@ -11,6 +11,7 @@ urlpatterns = [
     path('', include('arthur.urls')), 
     path('', include('alvorada.urls')), 
     path('', include('splendore.urls')),
+    path('', include('helborsorteio.urls')),
 ]
 
 
