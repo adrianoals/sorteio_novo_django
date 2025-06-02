@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 # View para realizar o sorteio
-def helbor_sorteio(request):
+def helborsorteio_sorteio(request):
     if request.method == 'POST':
         start_time = time.time()
         
@@ -155,7 +155,7 @@ def helbor_sorteio(request):
 
     return render(request, 'helborsorteio/helborsorteio_sorteio.html', context)
 
-def helbor_excel(request):
+def helborsorteio_excel(request):
     # Caminho do modelo Excel
     caminho_modelo = 'setup/static/assets/modelos/sorteiohelborsorteio.xlsx'
 
@@ -188,7 +188,7 @@ def helbor_excel(request):
 
     return response
 
-def helbor_qrcode(request):
+def helborsorteio_qrcode(request):
     # Obter todos os apartamentos para preencher o dropdown
     apartamentos_disponiveis = Apartamento.objects.all().order_by('torre', 'numero')
     
@@ -218,7 +218,7 @@ def helbor_qrcode(request):
         'apartamentos_disponiveis': apartamentos_disponiveis,
     })
 
-def helbor_zerar(request):
+def helborsorteio_zerar(request):
     if request.method == 'POST':
         Sorteio.objects.all().delete()
         return redirect('helbor_sorteio')
