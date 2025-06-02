@@ -6,38 +6,107 @@ from django.urls import reverse
 from openpyxl import load_workbook
 from io import BytesIO
 from .models import Apartamento, Vaga, Sorteio
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
 # View para realizar o sorteio
-def helborsorteio_sorteio(request):
+def helbor_sorteio(request):
     if request.method == 'POST':
+        start_time = time.time()
+        
         # Limpar registros anteriores de sorteio
+        logger.info("Iniciando deleção dos registros anteriores")
+        delete_start = time.time()
         Sorteio.objects.all().delete()
+        logger.info(f"Deleção concluída em {time.time() - delete_start:.2f} segundos")
 
         # Obter todos os apartamentos e vagas
+        logger.info("Buscando apartamentos e vagas")
+        fetch_start = time.time()
         apartamentos = list(Apartamento.objects.all())
         vagas = list(Vaga.objects.all())
+        logger.info(f"Busca concluída em {time.time() - fetch_start:.2f} segundos")
 
-        # Agrupar apartamentos e vagas por torre
+        # Agrupar apartamentos e vagas por torre e PNE
         apartamentos_por_torre = {}
         vagas_por_torre = {}
+        apartamentos_pne_por_torre = {}
+        vagas_pne_por_torre = {}
         
         for apartamento in apartamentos:
             torre = apartamento.torre
             if torre not in apartamentos_por_torre:
                 apartamentos_por_torre[torre] = []
-            apartamentos_por_torre[torre].append(apartamento)
+                apartamentos_pne_por_torre[torre] = []
+            
+            if apartamento.pne:
+                apartamentos_pne_por_torre[torre].append(apartamento)
+            else:
+                apartamentos_por_torre[torre].append(apartamento)
             
         for vaga in vagas:
             torre = vaga.torre
             if torre not in vagas_por_torre:
                 vagas_por_torre[torre] = []
-            vagas_por_torre[torre].append(vaga)
+                vagas_pne_por_torre[torre] = []
+            
+            if vaga.pne:
+                vagas_pne_por_torre[torre].append(vaga)
+            else:
+                vagas_por_torre[torre].append(vaga)
 
-        resultados_sorteio = []
+        # Lista para armazenar todos os objetos Sorteio
+        sorteios_para_criar = []
 
-        # Realizar o sorteio para cada torre
+        # Primeira Fase: Sorteio PNE
+        logger.info("Iniciando sorteio PNE")
+        pne_start = time.time()
+        
+        for torre in range(1, 6):  # Torres de 1 a 5
+            torre_str = str(torre)
+            
+            # Verificar se existem apartamentos e vagas PNE na torre
+            if (torre_str in apartamentos_pne_por_torre and 
+                torre_str in vagas_pne_por_torre and 
+                apartamentos_pne_por_torre[torre_str] and 
+                vagas_pne_por_torre[torre_str]):
+                
+                # Embaralhar apartamentos e vagas PNE da mesma torre
+                apartamentos_pne = apartamentos_pne_por_torre[torre_str]
+                vagas_pne = vagas_pne_por_torre[torre_str]
+                
+                random.shuffle(apartamentos_pne)
+                random.shuffle(vagas_pne)
+
+                # Alocar vagas PNE para apartamentos PNE
+                for i in range(min(len(apartamentos_pne), len(vagas_pne))):
+                    sorteios_para_criar.append(
+                        Sorteio(
+                            apartamento=apartamentos_pne[i],
+                            vaga=vagas_pne[i]
+                        )
+                    )
+                
+                # Se houver mais apartamentos PNE que vagas PNE, mover os excedentes para o sorteio normal
+                if len(apartamentos_pne) > len(vagas_pne):
+                    excedentes = apartamentos_pne[len(vagas_pne):]
+                    apartamentos_por_torre[torre_str].extend(excedentes)
+                
+                # Se houver mais vagas PNE que apartamentos PNE, mover as excedentes para o sorteio normal
+                if len(vagas_pne) > len(apartamentos_pne):
+                    excedentes = vagas_pne[len(apartamentos_pne):]
+                    vagas_por_torre[torre_str].extend(excedentes)
+
+        logger.info(f"Sorteio PNE concluído em {time.time() - pne_start:.2f} segundos")
+
+        # Segunda Fase: Sorteio Normal
+        logger.info("Iniciando sorteio normal")
+        normal_start = time.time()
+        
         for torre in range(1, 6):  # Torres de 1 a 5
             torre_str = str(torre)
             if torre_str in apartamentos_por_torre and torre_str in vagas_por_torre:
@@ -50,22 +119,32 @@ def helborsorteio_sorteio(request):
 
                 # Alocar vagas para apartamentos da mesma torre
                 for i in range(min(len(apartamentos_torre), len(vagas_torre))):
-                    apartamento = apartamentos_torre[i]
-                    vaga = vagas_torre[i]
-                    sorteio = Sorteio.objects.create(apartamento=apartamento, vaga=vaga)
-                    resultados_sorteio.append(sorteio)
+                    sorteios_para_criar.append(
+                        Sorteio(
+                            apartamento=apartamentos_torre[i],
+                            vaga=vagas_torre[i]
+                        )
+                    )
+
+        logger.info(f"Sorteio normal concluído em {time.time() - normal_start:.2f} segundos")
+
+        # Criar todos os registros de uma vez usando bulk_create
+        Sorteio.objects.bulk_create(sorteios_para_criar)
+        logger.info(f"Criação dos registros concluída em {time.time() - normal_start:.2f} segundos")
 
         # Marcar o sorteio como iniciado e armazenar o horário de conclusão
         request.session['sorteio_iniciado'] = True
         request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
 
+        logger.info(f"Sorteio total concluído em {time.time() - start_time:.2f} segundos")
+        
         # Redireciona para a mesma página após o sorteio
-        return redirect(reverse('helborsorteio_sorteio'))
+        return redirect(reverse('helbor_sorteio'))
 
     # Se o método for GET, exibe os resultados ou a interface de sorteio
     sorteio_iniciado = request.session.get('sorteio_iniciado', False)
     vagas_atribuidas = Sorteio.objects.exists()
-    resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
+    resultados_sorteio = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id') if vagas_atribuidas else None
 
     context = {
         'sorteio_iniciado': sorteio_iniciado,
@@ -74,11 +153,11 @@ def helborsorteio_sorteio(request):
         'horario_conclusao': request.session.get('horario_conclusao', '')
     }
 
-    return render(request, 'helborsorteio/helborsorteio_sorteio.html', context)
+    return render(request, 'helborsorteio/helbor_sorteio.html', context)
 
-def helborsorteio_excel(request):
+def helbor_excel(request):
     # Caminho do modelo Excel
-    caminho_modelo = 'setup/static/assets/modelos/sorteiohelborsorteio.xlsx'
+    caminho_modelo = 'setup/static/assets/modelos/sorteiohelbor.xlsx'
 
     # Carregar o modelo existente
     wb = load_workbook(caminho_modelo)
@@ -102,14 +181,14 @@ def helborsorteio_excel(request):
 
     # Configurar a resposta para o download do Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="sorteio_helborsorteio.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="sorteio_helbor.xlsx"'
 
     # Salvar o arquivo Excel na resposta
     wb.save(response)
 
     return response
 
-def helborsorteio_qrcode(request):
+def helbor_qrcode(request):
     # Obter todos os apartamentos para preencher o dropdown
     apartamentos_disponiveis = Apartamento.objects.all().order_by('torre', 'numero')
     
@@ -132,16 +211,16 @@ def helborsorteio_qrcode(request):
         # Buscar os sorteios com os filtros aplicados
         resultados_filtrados = Sorteio.objects.filter(**filtro)
 
-    return render(request, 'helborsorteio/helborsorteio_qrcode.html', {
+    return render(request, 'helborsorteio/helbor_qrcode.html', {
         'resultados_filtrados': resultados_filtrados,
         'apartamento_selecionado': numero_apartamento,
         'torre_selecionada': torre_selecionada,
         'apartamentos_disponiveis': apartamentos_disponiveis,
     })
 
-def helborsorteio_zerar(request):
+def helbor_zerar(request):
     if request.method == 'POST':
         Sorteio.objects.all().delete()
-        return redirect('helborsorteio_sorteio')
+        return redirect('helbor_sorteio')
     else:
-        return render(request, 'helborsorteio/helborsorteio_zerar.html')
+        return render(request, 'helborsorteio/helbor_zerar.html')
