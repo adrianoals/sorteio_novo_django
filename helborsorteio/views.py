@@ -177,6 +177,7 @@ def helborsorteio_excel(request):
         ws[f'B{linha}'] = sorteio.apartamento.numero
         ws[f'C{linha}'] = sorteio.vaga.numero
         ws[f'D{linha}'] = sorteio.vaga.torre
+        ws[f'E{linha}'] = sorteio.vaga.pne
         linha += 1
 
     # Configurar a resposta para o download do Excel
