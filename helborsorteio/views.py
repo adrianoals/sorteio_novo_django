@@ -157,7 +157,7 @@ def helborsorteio_sorteio(request):
 
 def helborsorteio_excel(request):
     # Caminho do modelo Excel
-    caminho_modelo = 'setup/static/assets/modelos/sorteiohelborsorteio.xlsx'
+    caminho_modelo = 'setup/static/assets/modelos/sorteiohelbor.xlsx'
 
     # Carregar o modelo existente
     wb = load_workbook(caminho_modelo)

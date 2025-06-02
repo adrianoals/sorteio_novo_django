@@ -3,7 +3,7 @@ version: "3.9"
 services:
   web:
     # use tag imutável publicada no registry
-    image: sorteio_novo-web:1.1.2
+    image: sorteio_novo-web:1.1.3
     env_file:
       - .env
     volumes:
