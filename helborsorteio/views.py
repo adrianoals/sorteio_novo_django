@@ -153,11 +153,11 @@ def helbor_sorteio(request):
         'horario_conclusao': request.session.get('horario_conclusao', '')
     }
 
-    return render(request, 'helborsorteio/helbor_sorteio.html', context)
+    return render(request, 'helborsorteio/helborsorteio_sorteio.html', context)
 
 def helbor_excel(request):
     # Caminho do modelo Excel
-    caminho_modelo = 'setup/static/assets/modelos/sorteiohelbor.xlsx'
+    caminho_modelo = 'setup/static/assets/modelos/sorteiohelborsorteio.xlsx'
 
     # Carregar o modelo existente
     wb = load_workbook(caminho_modelo)
@@ -181,7 +181,7 @@ def helbor_excel(request):
 
     # Configurar a resposta para o download do Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="sorteio_helbor.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="sorteio_helborsorteio.xlsx"'
 
     # Salvar o arquivo Excel na resposta
     wb.save(response)
@@ -211,7 +211,7 @@ def helbor_qrcode(request):
         # Buscar os sorteios com os filtros aplicados
         resultados_filtrados = Sorteio.objects.filter(**filtro)
 
-    return render(request, 'helborsorteio/helbor_qrcode.html', {
+    return render(request, 'helborsorteio/helborsorteio_qrcode.html', {
         'resultados_filtrados': resultados_filtrados,
         'apartamento_selecionado': numero_apartamento,
         'torre_selecionada': torre_selecionada,
@@ -223,4 +223,4 @@ def helbor_zerar(request):
         Sorteio.objects.all().delete()
         return redirect('helbor_sorteio')
     else:
-        return render(request, 'helborsorteio/helbor_zerar.html')
+        return render(request, 'helborsorteio/helborsorteio_zerar.html')
