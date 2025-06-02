@@ -168,7 +168,7 @@ def helborsorteio_excel(request):
 
     # Pegar o horário de conclusão do sorteio
     horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
-    ws['A8'] = f"Sorteio realizado em: {horario_conclusao}"
+    ws['B8'] = f"Sorteio realizado em: {horario_conclusao}"
 
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
@@ -177,7 +177,7 @@ def helborsorteio_excel(request):
         ws[f'B{linha}'] = sorteio.apartamento.numero
         ws[f'C{linha}'] = sorteio.vaga.numero
         ws[f'D{linha}'] = sorteio.vaga.torre
-        ws[f'E{linha}'] = sorteio.vaga.pne
+        ws[f'E{linha}'] = "PNE" if sorteio.vaga.pne else "-"
         linha += 1
 
     # Configurar a resposta para o download do Excel
