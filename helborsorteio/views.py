@@ -171,7 +171,7 @@ def helborsorteio_excel(request):
     ws['B8'] = f"Sorteio realizado em: {horario_conclusao}"
 
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
-    linha = 10
+    linha = 11
     for sorteio in resultados_sorteio:
         ws[f'A{linha}'] = sorteio.apartamento.torre
         ws[f'B{linha}'] = sorteio.apartamento.numero

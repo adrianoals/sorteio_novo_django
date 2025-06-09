@@ -19,7 +19,7 @@ class Apartamento(models.Model):
 
 # Representa as vagas de garagem
 class Vaga(models.Model):
-    numero = models.CharField(max_length=20, db_index=True)
+    numero = models.CharField(max_length=80, db_index=True)
     torre = models.CharField(max_length=2, db_index=True)
     pne = models.BooleanField(default=False, db_index=True)  # Campo para identificar vagas PNE
     
