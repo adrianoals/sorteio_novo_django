@@ -11,6 +11,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Define os pares fixos de apartamento-vaga
+APARTAMENTOS_VAGAS_FIXAS = {
+    752: 233,  # Apartamento 64 -> Vaga 233
+    903: 307  # Apartamento 903 -> Vaga 307
+}
+
 # Create your views here.
 
 # View para realizar o sorteio
@@ -30,6 +36,28 @@ def helborsorteio_sorteio(request):
         apartamentos = list(Apartamento.objects.all())
         vagas = list(Vaga.objects.all())
         logger.info(f"Busca concluída em {time.time() - fetch_start:.2f} segundos")
+
+        # Lista para armazenar todos os objetos Sorteio
+        sorteios_para_criar = []
+
+        # Atribuir vagas fixas primeiro
+        logger.info("Iniciando atribuição de vagas fixas")
+        for apartamento_id, vaga_id in APARTAMENTOS_VAGAS_FIXAS.items():
+            try:
+                apartamento = Apartamento.objects.get(id=apartamento_id)
+                vaga = Vaga.objects.get(id=vaga_id)
+                sorteios_para_criar.append(
+                    Sorteio(
+                        apartamento=apartamento,
+                        vaga=vaga
+                    )
+                )
+                # Remover o apartamento e a vaga das listas de sorteio
+                apartamentos = [apt for apt in apartamentos if apt.id != apartamento_id]
+                vagas = [v for v in vagas if v.id != vaga_id]
+                logger.info(f"Vaga fixa atribuída: Apartamento {apartamento_id} -> Vaga {vaga_id}")
+            except (Apartamento.DoesNotExist, Vaga.DoesNotExist) as e:
+                logger.error(f"Erro ao atribuir vaga fixa: {e}")
 
         # Agrupar apartamentos e vagas por torre e PNE
         apartamentos_por_torre = {}
@@ -58,9 +86,6 @@ def helborsorteio_sorteio(request):
                 vagas_pne_por_torre[torre].append(vaga)
             else:
                 vagas_por_torre[torre].append(vaga)
-
-        # Lista para armazenar todos os objetos Sorteio
-        sorteios_para_criar = []
 
         # Primeira Fase: Sorteio PNE
         logger.info("Iniciando sorteio PNE")
