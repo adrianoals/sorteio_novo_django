@@ -12,6 +12,7 @@ urlpatterns = [
     path('', include('alvorada.urls')), 
     path('', include('splendore.urls')),
     path('', include('helborsorteio.urls')),
+    path('', include('fatto_passion.urls')),
 ]
 
 
