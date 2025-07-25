@@ -241,8 +241,8 @@ def fatto_passion_excel(request):
         ws[f'B{linha}'] = sorteio.apartamento.numero
         ws[f'C{linha}'] = sorteio.vaga.numero
         ws[f'D{linha}'] = sorteio.vaga.get_andar_display()
-        ws[f'E{linha}'] = "PNE" if sorteio.vaga.pne else "-"
-        ws[f'F{linha}'] = "Coberta" if sorteio.vaga.vaga_coberta else "Descoberta"
+        ws[f'E{linha}'] = "Coberta" if sorteio.vaga.vaga_coberta else "Descoberta"
+        ws[f'F{linha}'] = "PNE" if sorteio.vaga.pne else "-"
         linha += 1
 
     # Configurar a resposta para o download do Excel
