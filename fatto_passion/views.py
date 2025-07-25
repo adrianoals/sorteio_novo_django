@@ -11,11 +11,98 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Define os pares fixos de apartamento-vaga (PNE e travadas)
-# Serão adicionados posteriormente conforme os dados fornecidos
+# Apartamentos com vagas fixas (travadas)
 APARTAMENTOS_VAGAS_FIXAS = {
-    # Exemplo: 1: 101,  # Apartamento 1 -> Vaga 101 (PNE)
-    # Exemplo: 2: 102,  # Apartamento 2 -> Vaga 102 (travada)
+    279: 413,  # Apartamento 23 -> Vaga 131
+    283: 561,  # Apartamento 31 -> Vaga 279
+    286: 564,  # Apartamento 34 -> Vaga 282
+    289: 559,  # Apartamento 41 -> Vaga 277
+    293: 538,  # Apartamento 45 -> Vaga 256
+    296: 329,  # Apartamento 52 -> Vaga 47
+    297: 537,  # Apartamento 53 -> Vaga 255
+    314: 422,  # Apartamento 82 -> Vaga 140
+    317: 511,  # Apartamento 85 -> Vaga 229
+    318: 513,  # Apartamento 86 -> Vaga 231
+    320: 522,  # Apartamento 92 -> Vaga 240
+    321: 517,  # Apartamento 93 -> Vaga 235
+    326: 515,  # Apartamento 102 -> Vaga 233
+    330: 423,  # Apartamento 106 -> Vaga 141
+    331: 364,  # Apartamento 111 -> Vaga 82
+    333: 345,  # Apartamento 113 -> Vaga 63
+    336: 292,  # Apartamento 116 -> Vaga 10
+    342: 510,  # Apartamento 126 -> Vaga 228
+    345: 428,  # Apartamento 133 -> Vaga 146
+    347: 448,  # Apartamento 135 -> Vaga 166
+    348: 516,  # Apartamento 136 -> Vaga 234
+    349: 421,  # Apartamento 141 -> Vaga 139
+    353: 521,  # Apartamento 145 -> Vaga 239
+    355: 514,  # Apartamento 151 -> Vaga 232
+    360: 435,  # Apartamento 156 -> Vaga 153
+    362: 519,  # Apartamento 162 -> Vaga 237
+    365: 417,  # Apartamento 165 -> Vaga 135
+    366: 414,  # Apartamento 166 -> Vaga 132
+    368: 518,  # Apartamento 172 -> Vaga 236
+    369: 429,  # Apartamento 173 -> Vaga 147
+    371: 291,  # Apartamento 175 -> Vaga 9
+    372: 520,  # Apartamento 176 -> Vaga 238
+    379: 284,  # Apartamento 184-1 -> Vaga 2
+    380: 285,  # Apartamento 184-2 -> Vaga 3
+    381: 535,  # Apartamento 185-1 -> Vaga 253
+    382: 536,  # Apartamento 185-2 -> Vaga 254
+    383: 533,  # Apartamento 186-1 -> Vaga 251
+    384: 534,  # Apartamento 186-2 -> Vaga 252
+    385: 296,  # Apartamento 2 -> Vaga 14
+    386: 293,  # Apartamento 3 -> Vaga 11
+    387: 342,  # Apartamento 4 -> Vaga 60
+    393: 286,  # Apartamento 13 -> Vaga 4
+    396: 419,  # Apartamento 16 -> Vaga 137
+    398: 343,  # Apartamento 18 -> Vaga 61
+    405: 315,  # Apartamento 27 -> Vaga 33
+    409: 288,  # Apartamento 33 -> Vaga 6
+    420: 298,  # Apartamento 46 -> Vaga 16
+    427: 443,  # Apartamento 55 -> Vaga 161
+    428: 416,  # Apartamento 56 -> Vaga 134
+    430: 562,  # Apartamento 58 -> Vaga 280
+    433: 319,  # Apartamento 63 -> Vaga 37
+    434: 332,  # Apartamento 64 -> Vaga 50
+    435: 444,  # Apartamento 65 -> Vaga 162
+    439: 333,  # Apartamento 71 -> Vaga 51
+    440: 320,  # Apartamento 72 -> Vaga 38
+    442: 331,  # Apartamento 74 -> Vaga 49
+    445: 412,  # Apartamento 77 -> Vaga 130
+    446: 563,  # Apartamento 78 -> Vaga 281
+    447: 560,  # Apartamento 81 -> Vaga 278
+    449: 351,  # Apartamento 83 -> Vaga 69
+    453: 431,  # Apartamento 87 -> Vaga 149
+    456: 424,  # Apartamento 92 -> Vaga 142
+    459: 283,  # Apartamento 95 -> Vaga 1
+    464: 411,  # Apartamento 102 -> Vaga 129
+    465: 427,  # Apartamento 103 -> Vaga 145
+    468: 430,  # Apartamento 106 -> Vaga 148
+    472: 425,  # Apartamento 112 -> Vaga 143
+    473: 290,  # Apartamento 113 -> Vaga 8
+    475: 558,  # Apartamento 115 -> Vaga 276
+    481: 512,  # Apartamento 123 -> Vaga 230
+    483: 499,  # Apartamento 125 -> Vaga 217
+    486: 448,  # Apartamento 128 -> Vaga 166
+    488: 420,  # Apartamento 132 -> Vaga 138
+    490: 445,  # Apartamento 134 -> Vaga 163
+    493: 330,  # Apartamento 137 -> Vaga 48
+    505: 415,  # Apartamento 153 -> Vaga 133
+    509: 426,  # Apartamento 157 -> Vaga 144
+    515: 313,  # Apartamento 165 -> Vaga 31
+    523: 359,  # Apartamento 175 -> Vaga 77
+    528: 287,  # Apartamento 182 -> Vaga 5
+    531: 418,  # Apartamento 185 -> Vaga 136
+    532: 344,  # Apartamento 186 -> Vaga 62
+    535: 379,  # Apartamento 191-1 -> Vaga 97
+    536: 380,  # Apartamento 191-2 -> Vaga 98
+    541: 396,  # Apartamento 194-1 -> Vaga 114
+    542: 397,  # Apartamento 194-2 -> Vaga 115
+    545: 381,  # Apartamento 196-1 -> Vaga 99
+    546: 382,  # Apartamento 196-2 -> Vaga 100
+    547: 377,  # Apartamento 197-1 -> Vaga 95
+    548: 378,  # Apartamento 197-2 -> Vaga 96
 }
 
 # Create your views here.
@@ -242,7 +329,7 @@ def fatto_passion_excel(request):
         ws[f'C{linha}'] = sorteio.vaga.numero
         ws[f'D{linha}'] = sorteio.vaga.get_andar_display()
         ws[f'E{linha}'] = "Coberta" if sorteio.vaga.vaga_coberta else "Descoberta"
-        ws[f'F{linha}'] = "PNE" if sorteio.vaga.pne else "-"
+        ws[f'F{linha}'] = "PNE" if sorteio.apartamento.pne else "-"
         linha += 1
 
     # Configurar a resposta para o download do Excel
