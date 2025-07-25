@@ -3,289 +3,302 @@ from fatto_passion.models import Apartamento
 # Definição dos apartamentos conforme configuração
 apartamentos = [
     # Bloco 01.Amour
-    ('005', '01.Amour', False, False, False),
-    ('006', '01.Amour', False, False, False),
-    ('011', '01.Amour', False, False, False),
-    ('012', '01.Amour', False, False, False),
-    ('013', '01.Amour', False, False, False),
-    ('014', '01.Amour', False, False, False),
-    ('015', '01.Amour', False, False, False),
-    ('016', '01.Amour', False, False, False),
-    ('021', '01.Amour', False, False, False),
-    ('022', '01.Amour', False, False, False),
-    ('023', '01.Amour', False, False, False),
-    ('024', '01.Amour', False, False, False),
-    ('025', '01.Amour', False, False, False),
-    ('026', '01.Amour', False, False, False),
-    ('031', '01.Amour', False, False, False),
-    ('032', '01.Amour', False, False, False),
-    ('033', '01.Amour', False, False, False),
-    ('034', '01.Amour', False, False, False),
-    ('035', '01.Amour', False, False, False),
-    ('036', '01.Amour', False, False, False),
-    ('041', '01.Amour', False, False, False),
-    ('042', '01.Amour', False, False, False),
-    ('043', '01.Amour', False, False, False),
-    ('044', '01.Amour', False, False, False),
-    ('045', '01.Amour', False, False, False),
-    ('046', '01.Amour', False, False, False),
-    ('051', '01.Amour', False, False, False),
-    ('052', '01.Amour', False, False, False),
-    ('053', '01.Amour', False, False, False),
-    ('054', '01.Amour', False, False, False),
-    ('055', '01.Amour', False, False, False),
-    ('056', '01.Amour', False, False, False),
-    ('061', '01.Amour', False, False, False),
-    ('062', '01.Amour', False, False, False),
-    ('063', '01.Amour', False, False, False),
-    ('064', '01.Amour', False, False, False),
-    ('065', '01.Amour', False, False, False),
-    ('066', '01.Amour', False, False, False),
-    ('071', '01.Amour', False, False, False),
-    ('072', '01.Amour', False, False, False),
-    ('073', '01.Amour', False, False, False),
-    ('074', '01.Amour', False, False, False),
-    ('075', '01.Amour', False, False, False),
-    ('076', '01.Amour', False, False, False),
-    ('081', '01.Amour', False, False, False),
-    ('082', '01.Amour', False, False, False),
-    ('083', '01.Amour', False, False, False),
-    ('084', '01.Amour', False, False, False),
-    ('085', '01.Amour', False, False, False),
-    ('086', '01.Amour', False, False, False),
-    ('091', '01.Amour', False, False, False),
-    ('092', '01.Amour', False, False, False),
-    ('093', '01.Amour', False, False, False),
-    ('094', '01.Amour', False, False, False),
-    ('095', '01.Amour', False, False, False),
-    ('096', '01.Amour', False, False, False),
-    ('101', '01.Amour', False, False, False),
-    ('102', '01.Amour', False, False, False),
-    ('103', '01.Amour', False, False, False),
-    ('104', '01.Amour', False, False, False),
-    ('105', '01.Amour', False, False, False),
-    ('106', '01.Amour', False, False, False),
-    ('111', '01.Amour', False, False, False),
-    ('112', '01.Amour', False, False, False),
-    ('113', '01.Amour', False, False, False),
-    ('114', '01.Amour', False, False, False),
-    ('115', '01.Amour', False, False, False),
-    ('116', '01.Amour', False, False, False),
-    ('121', '01.Amour', False, False, False),
-    ('122', '01.Amour', False, False, False),
-    ('123', '01.Amour', False, False, False),
-    ('124', '01.Amour', False, False, False),
-    ('125', '01.Amour', False, False, False),
-    ('126', '01.Amour', False, False, False),
-    ('131', '01.Amour', False, False, False),
-    ('132', '01.Amour', False, False, False),
-    ('133', '01.Amour', False, False, False),
-    ('134', '01.Amour', False, False, False),
-    ('135', '01.Amour', False, False, False),
-    ('136', '01.Amour', False, False, False),
-    ('141', '01.Amour', False, False, False),
-    ('142', '01.Amour', False, False, False),
-    ('143', '01.Amour', False, False, False),
-    ('144', '01.Amour', False, False, False),
-    ('145', '01.Amour', False, False, False),
-    ('146', '01.Amour', False, False, False),
-    ('151', '01.Amour', False, False, False),
-    ('152', '01.Amour', False, False, False),
-    ('153', '01.Amour', False, False, False),
-    ('154', '01.Amour', False, False, False),
-    ('155', '01.Amour', False, False, False),
-    ('156', '01.Amour', False, False, False),
-    ('161', '01.Amour', False, False, False),
-    ('162', '01.Amour', False, False, False),
-    ('163', '01.Amour', False, False, False),
-    ('164', '01.Amour', False, False, False),
-    ('165', '01.Amour', False, False, False),
-    ('166', '01.Amour', False, False, False),
-    ('171', '01.Amour', False, False, False),
-    ('172', '01.Amour', False, False, False),
-    ('173', '01.Amour', False, False, False),
-    ('174', '01.Amour', False, False, False),
-    ('175', '01.Amour', False, False, False),
-    ('176', '01.Amour', False, False, False),
-    # Apartamentos com 2 vagas no bloco 01.Amour
-    ('181', '01.Amour', False, False, True),
-    ('182', '01.Amour', False, False, True),
-    ('183', '01.Amour', False, False, True),
-    ('184', '01.Amour', False, False, True),
-    ('185', '01.Amour', False, False, True),
-    ('186', '01.Amour', False, False, True),
+    ('005', '01.Amour', False, True),   # Coberta
+    ('006', '01.Amour', False, True),   # Coberta
+    ('011', '01.Amour', False, False),  # Descoberta
+    ('012', '01.Amour', False, True),   # Coberta
+    ('013', '01.Amour', False, True),   # Coberta
+    ('014', '01.Amour', False, False),  # Descoberta
+    ('015', '01.Amour', False, True),   # Coberta
+    ('016', '01.Amour', False, True),   # Coberta
+    ('021', '01.Amour', False, False),  # Descoberta
+    ('022', '01.Amour', False, True),   # Coberta
+    ('023', '01.Amour', False, True),   # Coberta
+    ('024', '01.Amour', False, False),  # Descoberta
+    ('025', '01.Amour', False, True),   # Coberta
+    ('026', '01.Amour', False, True),   # Coberta
+    ('031', '01.Amour', False, False),  # Descoberta
+    ('032', '01.Amour', False, True),   # Coberta
+    ('033', '01.Amour', False, True),   # Coberta
+    ('034', '01.Amour', False, False),  # Descoberta
+    ('035', '01.Amour', False, True),   # Coberta
+    ('036', '01.Amour', False, True),   # Coberta
+    ('041', '01.Amour', False, False),  # Descoberta
+    ('042', '01.Amour', False, True),   # Coberta
+    ('043', '01.Amour', False, True),   # Coberta
+    ('044', '01.Amour', False, False),  # Descoberta
+    ('045', '01.Amour', False, True),   # Coberta
+    ('046', '01.Amour', False, True),   # Coberta
+    ('051', '01.Amour', False, False),  # Descoberta
+    ('052', '01.Amour', False, True),   # Coberta
+    ('053', '01.Amour', False, True),   # Coberta
+    ('054', '01.Amour', False, False),  # Descoberta
+    ('055', '01.Amour', False, True),   # Coberta
+    ('056', '01.Amour', False, True),   # Coberta
+    ('061', '01.Amour', False, False),  # Descoberta
+    ('062', '01.Amour', False, True),   # Coberta
+    ('063', '01.Amour', False, True),   # Coberta
+    ('064', '01.Amour', False, False),  # Descoberta
+    ('065', '01.Amour', False, True),   # Coberta
+    ('066', '01.Amour', False, True),   # Coberta
+    ('071', '01.Amour', False, False),  # Descoberta
+    ('072', '01.Amour', False, True),   # Coberta
+    ('073', '01.Amour', False, True),   # Coberta
+    ('074', '01.Amour', False, False),  # Descoberta
+    ('075', '01.Amour', False, True),   # Coberta
+    ('076', '01.Amour', False, True),   # Coberta
+    ('081', '01.Amour', False, False),  # Descoberta
+    ('082', '01.Amour', False, True),   # Coberta
+    ('083', '01.Amour', False, True),   # Coberta
+    ('084', '01.Amour', False, False),  # Descoberta
+    ('085', '01.Amour', False, True),   # Coberta
+    ('086', '01.Amour', False, True),   # Coberta
+    ('091', '01.Amour', False, False),  # Descoberta
+    ('092', '01.Amour', False, True),   # Coberta
+    ('093', '01.Amour', False, True),   # Coberta
+    ('094', '01.Amour', False, False),  # Descoberta
+    ('095', '01.Amour', False, True),   # Coberta
+    ('096', '01.Amour', False, True),   # Coberta
+    ('101', '01.Amour', False, False),  # Descoberta
+    ('102', '01.Amour', False, True),   # Coberta
+    ('103', '01.Amour', False, True),   # Coberta
+    ('104', '01.Amour', False, False),  # Descoberta
+    ('105', '01.Amour', False, True),   # Coberta
+    ('106', '01.Amour', False, True),   # Coberta
+    ('111', '01.Amour', False, True),   # Coberta
+    ('112', '01.Amour', False, True),   # Coberta
+    ('113', '01.Amour', False, True),   # Coberta
+    ('114', '01.Amour', False, True),   # Coberta
+    ('115', '01.Amour', False, True),   # Coberta
+    ('116', '01.Amour', False, True),   # Coberta
+    ('121', '01.Amour', False, True),   # Coberta
+    ('122', '01.Amour', False, True),   # Coberta
+    ('123', '01.Amour', False, True),   # Coberta
+    ('124', '01.Amour', False, True),   # Coberta
+    ('125', '01.Amour', False, True),   # Coberta
+    ('126', '01.Amour', False, True),   # Coberta
+    ('131', '01.Amour', False, True),   # Coberta
+    ('132', '01.Amour', False, True),   # Coberta
+    ('133', '01.Amour', False, True),   # Coberta
+    ('134', '01.Amour', False, True),   # Coberta
+    ('135', '01.Amour', False, True),   # Coberta
+    ('136', '01.Amour', False, True),   # Coberta
+    ('141', '01.Amour', False, True),   # Coberta
+    ('142', '01.Amour', False, True),   # Coberta
+    ('143', '01.Amour', False, True),   # Coberta
+    ('144', '01.Amour', False, True),   # Coberta
+    ('145', '01.Amour', False, True),   # Coberta
+    ('146', '01.Amour', False, True),   # Coberta
+    ('151', '01.Amour', False, True),   # Coberta
+    ('152', '01.Amour', False, True),   # Coberta
+    ('153', '01.Amour', False, True),   # Coberta
+    ('154', '01.Amour', False, True),   # Coberta
+    ('155', '01.Amour', False, True),   # Coberta
+    ('156', '01.Amour', False, True),   # Coberta
+    ('161', '01.Amour', False, True),   # Coberta
+    ('162', '01.Amour', False, True),   # Coberta
+    ('163', '01.Amour', False, True),   # Coberta
+    ('164', '01.Amour', False, True),   # Coberta
+    ('165', '01.Amour', False, True),   # Coberta
+    ('166', '01.Amour', False, True),   # Coberta
+    ('171', '01.Amour', False, True),   # Coberta
+    ('172', '01.Amour', False, True),   # Coberta
+    ('173', '01.Amour', False, True),   # Coberta
+    ('174', '01.Amour', False, True),   # Coberta
+    ('175', '01.Amour', False, True),   # Coberta
+    ('176', '01.Amour', False, True),   # Coberta
+    # Apartamentos com 2 vagas no bloco 01.Amour (duplicados)
+    ('181-1', '01.Amour', False, True),   # Coberta
+    ('181-2', '01.Amour', False, True),   # Coberta
+    ('182-1', '01.Amour', False, True),   # Coberta
+    ('182-2', '01.Amour', False, True),   # Coberta
+    ('183-1', '01.Amour', False, True),   # Coberta
+    ('183-2', '01.Amour', False, True),   # Coberta
+    ('184-1', '01.Amour', False, False),  # Descoberta
+    ('184-2', '01.Amour', False, False),  # Descoberta
+    ('185-1', '01.Amour', False, True),   # Coberta
+    ('185-2', '01.Amour', False, True),   # Coberta
+    ('186-1', '01.Amour', False, True),   # Coberta
+    ('186-2', '01.Amour', False, True),   # Coberta
 
     # Bloco 02.Vivant
-    ('002', '02.Vivant', False, False, False),
-    ('003', '02.Vivant', False, False, False),
-    ('004', '02.Vivant', False, False, False),
-    ('005', '02.Vivant', False, False, False),
-    ('006', '02.Vivant', False, False, False),
-    ('007', '02.Vivant', False, False, False),
-    ('011', '02.Vivant', False, False, False),
-    ('012', '02.Vivant', False, False, False),
-    ('013', '02.Vivant', False, False, False),
-    ('014', '02.Vivant', False, False, False),
-    ('015', '02.Vivant', False, False, False),
-    ('016', '02.Vivant', False, False, False),
-    ('017', '02.Vivant', False, False, False),
-    ('018', '02.Vivant', False, False, False),
-    ('021', '02.Vivant', False, False, False),
-    ('022', '02.Vivant', False, False, False),
-    ('023', '02.Vivant', False, False, False),
-    ('024', '02.Vivant', False, False, False),
-    ('025', '02.Vivant', False, False, False),
-    ('026', '02.Vivant', False, False, False),
-    ('027', '02.Vivant', False, False, False),
-    ('028', '02.Vivant', False, False, False),
-    ('031', '02.Vivant', False, False, False),
-    ('032', '02.Vivant', False, False, False),
-    ('033', '02.Vivant', False, False, False),
-    ('034', '02.Vivant', False, False, False),
-    ('035', '02.Vivant', False, False, False),
-    ('036', '02.Vivant', False, False, False),
-    ('037', '02.Vivant', False, False, False),
-    ('038', '02.Vivant', False, False, False),
-    ('041', '02.Vivant', False, False, False),
-    ('042', '02.Vivant', False, False, False),
-    ('043', '02.Vivant', False, False, False),
-    ('044', '02.Vivant', False, False, False),
-    ('045', '02.Vivant', False, False, False),
-    ('046', '02.Vivant', False, False, False),
-    ('047', '02.Vivant', False, False, False),
-    ('048', '02.Vivant', False, False, False),
-    ('051', '02.Vivant', False, False, False),
-    ('052', '02.Vivant', False, False, False),
-    ('053', '02.Vivant', False, False, False),
-    ('054', '02.Vivant', False, False, False),
-    ('055', '02.Vivant', False, False, False),
-    ('056', '02.Vivant', False, False, False),
-    ('057', '02.Vivant', False, False, False),
-    ('058', '02.Vivant', False, False, False),
-    ('061', '02.Vivant', False, False, False),
-    ('062', '02.Vivant', False, False, False),
-    ('063', '02.Vivant', False, False, False),
-    ('064', '02.Vivant', False, False, False),
-    ('065', '02.Vivant', False, False, False),
-    ('066', '02.Vivant', False, False, False),
-    ('067', '02.Vivant', False, False, False),
-    ('068', '02.Vivant', False, False, False),
-    ('071', '02.Vivant', False, False, False),
-    ('072', '02.Vivant', False, False, False),
-    ('073', '02.Vivant', False, False, False),
-    ('074', '02.Vivant', False, False, False),
-    ('075', '02.Vivant', False, False, False),
-    ('076', '02.Vivant', False, False, False),
-    ('077', '02.Vivant', False, False, False),
-    ('078', '02.Vivant', False, False, False),
-    ('081', '02.Vivant', False, False, False),
-    ('082', '02.Vivant', False, False, False),
-    ('083', '02.Vivant', False, False, False),
-    ('084', '02.Vivant', False, False, False),
-    ('085', '02.Vivant', False, False, False),
-    ('086', '02.Vivant', False, False, False),
-    ('087', '02.Vivant', False, False, False),
-    ('088', '02.Vivant', False, False, False),
-    ('091', '02.Vivant', False, False, False),
-    ('092', '02.Vivant', False, False, False),
-    ('093', '02.Vivant', False, False, False),
-    ('094', '02.Vivant', False, False, False),
-    ('095', '02.Vivant', False, False, False),
-    ('096', '02.Vivant', False, False, False),
-    ('097', '02.Vivant', False, False, False),
-    ('098', '02.Vivant', False, False, False),
-    ('101', '02.Vivant', False, False, False),
-    ('102', '02.Vivant', False, False, False),
-    ('103', '02.Vivant', False, False, False),
-    ('104', '02.Vivant', False, False, False),
-    ('105', '02.Vivant', False, False, False),
-    ('106', '02.Vivant', False, False, False),
-    ('107', '02.Vivant', False, False, False),
-    ('108', '02.Vivant', False, False, False),
-    ('111', '02.Vivant', False, False, False),
-    ('112', '02.Vivant', False, False, False),
-    ('113', '02.Vivant', False, False, False),
-    ('114', '02.Vivant', False, False, False),
-    ('115', '02.Vivant', False, False, False),
-    ('116', '02.Vivant', False, False, False),
-    ('117', '02.Vivant', False, False, False),
-    ('118', '02.Vivant', False, False, False),
-    ('121', '02.Vivant', False, False, False),
-    ('122', '02.Vivant', False, False, False),
-    ('123', '02.Vivant', False, False, False),
-    ('124', '02.Vivant', False, False, False),
-    ('125', '02.Vivant', False, False, False),
-    ('126', '02.Vivant', False, False, False),
-    ('127', '02.Vivant', False, False, False),
-    ('128', '02.Vivant', False, False, False),
-    ('131', '02.Vivant', False, False, False),
-    ('132', '02.Vivant', False, False, False),
-    ('133', '02.Vivant', False, False, False),
-    ('134', '02.Vivant', False, False, False),
-    ('135', '02.Vivant', False, False, False),
-    ('136', '02.Vivant', False, False, False),
-    ('137', '02.Vivant', False, False, False),
-    ('138', '02.Vivant', False, False, False),
-    ('141', '02.Vivant', False, False, False),
-    ('142', '02.Vivant', False, False, False),
-    ('143', '02.Vivant', False, False, False),
-    ('144', '02.Vivant', False, False, False),
-    ('145', '02.Vivant', False, False, False),
-    ('146', '02.Vivant', False, False, False),
-    ('147', '02.Vivant', False, False, False),
-    ('148', '02.Vivant', False, False, False),
-    ('151', '02.Vivant', False, False, False),
-    ('152', '02.Vivant', False, False, False),
-    ('153', '02.Vivant', False, False, False),
-    ('154', '02.Vivant', False, False, False),
-    ('155', '02.Vivant', False, False, False),
-    ('156', '02.Vivant', False, False, False),
-    ('157', '02.Vivant', False, False, False),
-    ('158', '02.Vivant', False, False, False),
-    ('161', '02.Vivant', False, False, False),
-    ('162', '02.Vivant', False, False, False),
-    ('163', '02.Vivant', False, False, False),
-    ('164', '02.Vivant', False, False, False),
-    ('165', '02.Vivant', False, False, False),
-    ('166', '02.Vivant', False, False, False),
-    ('167', '02.Vivant', False, False, False),
-    ('168', '02.Vivant', False, False, False),
-    ('171', '02.Vivant', False, False, False),
-    ('172', '02.Vivant', False, False, False),
-    ('173', '02.Vivant', False, False, False),
-    ('174', '02.Vivant', False, False, False),
-    ('175', '02.Vivant', False, False, False),
-    ('176', '02.Vivant', False, False, False),
-    ('177', '02.Vivant', False, False, False),
-    ('178', '02.Vivant', False, False, False),
-    ('181', '02.Vivant', False, False, False),
-    ('182', '02.Vivant', False, False, False),
-    ('183', '02.Vivant', False, False, False),
-    ('184', '02.Vivant', False, False, False),
-    ('185', '02.Vivant', False, False, False),
-    ('186', '02.Vivant', False, False, False),
-    ('187', '02.Vivant', False, False, False),
-    ('188', '02.Vivant', False, False, False),
-    # Apartamentos com 2 vagas no bloco 02.Vivant
-    ('191', '02.Vivant', False, False, True),
-    ('192', '02.Vivant', False, False, True),
-    ('193', '02.Vivant', False, False, True),
-    ('194', '02.Vivant', False, False, True),
-    ('195', '02.Vivant', False, False, True),
-    ('196', '02.Vivant', False, False, True),
-    ('197', '02.Vivant', False, False, True),
-    ('198', '02.Vivant', False, False, True),
+    ('002', '02.Vivant', False, True),   # Coberta
+    ('003', '02.Vivant', False, True),   # Coberta
+    ('004', '02.Vivant', False, False),  # Descoberta
+    ('005', '02.Vivant', False, False),  # Descoberta
+    ('006', '02.Vivant', False, True),   # Coberta
+    ('007', '02.Vivant', False, True),   # Coberta
+    ('011', '02.Vivant', False, False),  # Descoberta
+    ('012', '02.Vivant', False, True),   # Coberta
+    ('013', '02.Vivant', False, True),   # Coberta
+    ('014', '02.Vivant', False, False),  # Descoberta
+    ('015', '02.Vivant', False, False),  # Descoberta
+    ('016', '02.Vivant', False, True),   # Coberta
+    ('017', '02.Vivant', False, True),   # Coberta
+    ('018', '02.Vivant', False, False),  # Descoberta
+    ('021', '02.Vivant', False, False),  # Descoberta
+    ('022', '02.Vivant', False, True),   # Coberta
+    ('023', '02.Vivant', False, True),   # Coberta
+    ('024', '02.Vivant', False, False),  # Descoberta
+    ('025', '02.Vivant', False, False),  # Descoberta
+    ('026', '02.Vivant', False, True),   # Coberta
+    ('027', '02.Vivant', False, True),   # Coberta
+    ('028', '02.Vivant', False, False),  # Descoberta
+    ('031', '02.Vivant', False, False),  # Descoberta
+    ('032', '02.Vivant', False, True),   # Coberta
+    ('033', '02.Vivant', False, True),   # Coberta
+    ('034', '02.Vivant', False, False),  # Descoberta
+    ('035', '02.Vivant', False, False),  # Descoberta
+    ('036', '02.Vivant', False, True),   # Coberta
+    ('037', '02.Vivant', False, True),   # Coberta
+    ('038', '02.Vivant', False, False),  # Descoberta
+    ('041', '02.Vivant', False, False),  # Descoberta
+    ('042', '02.Vivant', False, True),   # Coberta
+    ('043', '02.Vivant', False, True),   # Coberta
+    ('044', '02.Vivant', False, False),  # Descoberta
+    ('045', '02.Vivant', False, False),  # Descoberta
+    ('046', '02.Vivant', False, True),   # Coberta
+    ('047', '02.Vivant', False, True),   # Coberta
+    ('048', '02.Vivant', False, False),  # Descoberta
+    ('051', '02.Vivant', False, False),  # Descoberta
+    ('052', '02.Vivant', False, True),   # Coberta
+    ('053', '02.Vivant', False, True),   # Coberta
+    ('054', '02.Vivant', False, False),  # Descoberta
+    ('055', '02.Vivant', False, False),  # Descoberta
+    ('056', '02.Vivant', False, True),   # Coberta
+    ('057', '02.Vivant', False, True),   # Coberta
+    ('058', '02.Vivant', False, False),  # Descoberta
+    ('061', '02.Vivant', False, False),  # Descoberta
+    ('062', '02.Vivant', False, True),   # Coberta
+    ('063', '02.Vivant', False, True),   # Coberta
+    ('064', '02.Vivant', False, False),  # Descoberta
+    ('065', '02.Vivant', False, False),  # Descoberta
+    ('066', '02.Vivant', False, True),   # Coberta
+    ('067', '02.Vivant', False, True),   # Coberta
+    ('068', '02.Vivant', False, False),  # Descoberta
+    ('071', '02.Vivant', False, False),  # Descoberta
+    ('072', '02.Vivant', False, True),   # Coberta
+    ('073', '02.Vivant', False, True),   # Coberta
+    ('074', '02.Vivant', False, False),  # Descoberta
+    ('075', '02.Vivant', False, False),  # Descoberta
+    ('076', '02.Vivant', False, True),   # Coberta
+    ('077', '02.Vivant', False, True),   # Coberta
+    ('078', '02.Vivant', False, False),  # Descoberta
+    ('081', '02.Vivant', False, False),  # Descoberta
+    ('082', '02.Vivant', False, True),   # Coberta
+    ('083', '02.Vivant', False, True),   # Coberta
+    ('084', '02.Vivant', False, False),  # Descoberta
+    ('085', '02.Vivant', False, False),  # Descoberta
+    ('086', '02.Vivant', False, True),   # Coberta
+    ('087', '02.Vivant', False, True),   # Coberta
+    ('088', '02.Vivant', False, False),  # Descoberta
+    ('091', '02.Vivant', False, False),  # Descoberta
+    ('092', '02.Vivant', False, True),   # Coberta
+    ('093', '02.Vivant', False, True),   # Coberta
+    ('094', '02.Vivant', False, False),  # Descoberta
+    ('095', '02.Vivant', False, False),  # Descoberta
+    ('096', '02.Vivant', False, True),   # Coberta
+    ('097', '02.Vivant', False, True),   # Coberta
+    ('098', '02.Vivant', False, False),  # Descoberta
+    ('101', '02.Vivant', False, False),  # Descoberta
+    ('102', '02.Vivant', False, True),   # Coberta
+    ('103', '02.Vivant', False, True),   # Coberta
+    ('104', '02.Vivant', False, False),  # Descoberta
+    ('105', '02.Vivant', False, False),  # Descoberta
+    ('106', '02.Vivant', False, True),   # Coberta
+    ('107', '02.Vivant', False, True),   # Coberta
+    ('108', '02.Vivant', False, False),  # Descoberta
+    ('111', '02.Vivant', False, False),  # Descoberta
+    ('112', '02.Vivant', False, True),   # Coberta
+    ('113', '02.Vivant', False, True),   # Coberta
+    ('114', '02.Vivant', False, False),  # Descoberta
+    ('115', '02.Vivant', False, False),  # Descoberta
+    ('116', '02.Vivant', False, True),   # Coberta
+    ('117', '02.Vivant', False, True),   # Coberta
+    ('118', '02.Vivant', False, False),  # Descoberta
+    ('121', '02.Vivant', False, True),   # Coberta
+    ('122', '02.Vivant', False, True),   # Coberta
+    ('123', '02.Vivant', False, True),   # Coberta
+    ('124', '02.Vivant', False, True),   # Coberta
+    ('125', '02.Vivant', False, True),   # Coberta
+    ('126', '02.Vivant', False, True),   # Coberta
+    ('127', '02.Vivant', False, True),   # Coberta
+    ('128', '02.Vivant', False, True),   # Coberta
+    ('131', '02.Vivant', False, True),   # Coberta
+    ('132', '02.Vivant', False, True),   # Coberta
+    ('133', '02.Vivant', False, True),   # Coberta
+    ('134', '02.Vivant', False, True),   # Coberta
+    ('135', '02.Vivant', False, True),   # Coberta
+    ('136', '02.Vivant', False, True),   # Coberta
+    ('137', '02.Vivant', False, True),   # Coberta
+    ('138', '02.Vivant', False, True),   # Coberta
+    ('141', '02.Vivant', False, True),   # Coberta
+    ('142', '02.Vivant', False, True),   # Coberta
+    ('143', '02.Vivant', False, True),   # Coberta
+    ('144', '02.Vivant', False, True),   # Coberta
+    ('145', '02.Vivant', False, True),   # Coberta
+    ('146', '02.Vivant', False, True),   # Coberta
+    ('147', '02.Vivant', False, True),   # Coberta
+    ('148', '02.Vivant', False, True),   # Coberta
+    ('151', '02.Vivant', False, True),   # Coberta
+    ('152', '02.Vivant', False, True),   # Coberta
+    ('153', '02.Vivant', False, True),   # Coberta
+    ('154', '02.Vivant', False, True),   # Coberta
+    ('155', '02.Vivant', False, True),   # Coberta
+    ('156', '02.Vivant', False, True),   # Coberta
+    ('157', '02.Vivant', False, True),   # Coberta
+    ('158', '02.Vivant', False, True),   # Coberta
+    ('161', '02.Vivant', False, True),   # Coberta
+    ('162', '02.Vivant', False, True),   # Coberta
+    ('163', '02.Vivant', False, True),   # Coberta
+    ('164', '02.Vivant', False, True),   # Coberta
+    ('165', '02.Vivant', False, True),   # Coberta
+    ('166', '02.Vivant', False, True),   # Coberta
+    ('167', '02.Vivant', False, True),   # Coberta
+    ('168', '02.Vivant', False, True),   # Coberta
+    ('171', '02.Vivant', False, True),   # Coberta
+    ('172', '02.Vivant', False, True),   # Coberta
+    ('173', '02.Vivant', False, True),   # Coberta
+    ('174', '02.Vivant', False, True),   # Coberta
+    ('175', '02.Vivant', False, True),   # Coberta
+    ('176', '02.Vivant', False, True),   # Coberta
+    ('177', '02.Vivant', False, True),   # Coberta
+    ('178', '02.Vivant', False, True),   # Coberta
+    ('181', '02.Vivant', False, True),   # Coberta
+    ('182', '02.Vivant', False, True),   # Coberta
+    ('183', '02.Vivant', False, True),   # Coberta
+    ('184', '02.Vivant', False, True),   # Coberta
+    ('185', '02.Vivant', False, True),   # Coberta
+    ('186', '02.Vivant', False, True),   # Coberta
+    ('187', '02.Vivant', False, True),   # Coberta
+    ('188', '02.Vivant', False, True),   # Coberta
+    # Apartamentos com 2 vagas no bloco 02.Vivant (duplicados)
+    ('191-1', '02.Vivant', False, True),   # Coberta
+    ('191-2', '02.Vivant', False, True),   # Coberta
+    ('192-1', '02.Vivant', False, True),   # Coberta
+    ('192-2', '02.Vivant', False, True),   # Coberta
+    ('193-1', '02.Vivant', False, True),   # Coberta
+    ('193-2', '02.Vivant', False, True),   # Coberta
+    ('194-1', '02.Vivant', False, True),   # Coberta
+    ('194-2', '02.Vivant', False, True),   # Coberta
+    ('195-1', '02.Vivant', False, True),   # Coberta
+    ('195-2', '02.Vivant', False, True),   # Coberta
+    ('196-1', '02.Vivant', False, True),   # Coberta
+    ('196-2', '02.Vivant', False, True),   # Coberta
+    ('197-1', '02.Vivant', False, True),   # Coberta
+    ('197-2', '02.Vivant', False, True),   # Coberta
+    ('198-1', '02.Vivant', False, True),   # Coberta
+    ('198-2', '02.Vivant', False, True),   # Coberta
 ]
 
 # Loop de criação
-for numero, bloco, pne, vaga_coberta, vaga_dupla in apartamentos:
+for numero, bloco, pne, vaga_coberta in apartamentos:
     try:
         apartamento = Apartamento.objects.create(
             numero=numero,
             bloco=bloco,
             pne=pne,
-            vaga_coberta=vaga_coberta,
-            vaga_dupla=vaga_dupla
+            vaga_coberta=vaga_coberta
         )
         print(f"✓ {numero} - Bloco {bloco}")
     except Exception as e:

@@ -18,11 +18,6 @@ APARTAMENTOS_VAGAS_FIXAS = {
     # Exemplo: 2: 102,  # Apartamento 2 -> Vaga 102 (travada)
 }
 
-# Apartamentos com duas vagas travadas
-APARTAMENTOS_DUPLA_VAGA_FIXA = {
-    # Exemplo: 3: [103, 104],  # Apartamento 3 -> Vagas 103 e 104 (ambas travadas)
-}
-
 # Create your views here.
 
 # View para realizar o sorteio
@@ -46,8 +41,8 @@ def fatto_passion_sorteio(request):
         # Lista para armazenar todos os objetos Sorteio
         sorteios_para_criar = []
 
-        # Primeira Fase: Vagas PNE (travadas)
-        logger.info("Iniciando atribuição de vagas PNE travadas")
+        # FASE 1: Vagas Travadas (PNE e fixas)
+        logger.info("FASE 1: Iniciando atribuição de vagas travadas")
         pne_start = time.time()
         
         for apartamento_id, vaga_id in APARTAMENTOS_VAGAS_FIXAS.items():
@@ -63,101 +58,143 @@ def fatto_passion_sorteio(request):
                 # Remover o apartamento e a vaga das listas de sorteio
                 apartamentos = [apt for apt in apartamentos if apt.id != apartamento_id]
                 vagas = [v for v in vagas if v.id != vaga_id]
-                logger.info(f"Vaga PNE travada atribuída: Apartamento {apartamento_id} -> Vaga {vaga_id}")
+                logger.info(f"Vaga travada atribuída: Apartamento {apartamento_id} -> Vaga {vaga_id}")
             except (Apartamento.DoesNotExist, Vaga.DoesNotExist) as e:
-                logger.error(f"Erro ao atribuir vaga PNE travada: {e}")
+                logger.error(f"Erro ao atribuir vaga travada: {e}")
 
-        # Segunda Fase: Vagas travadas (incluindo duplas)
-        logger.info("Iniciando atribuição de vagas travadas")
-        travada_start = time.time()
+        logger.info(f"FASE 1 concluída em {time.time() - pne_start:.2f} segundos")
+
+        # FASE 2: Apartamentos com vagas descobertas
+        logger.info("FASE 2: Sorteio de apartamentos com vagas descobertas")
+        descoberta_start = time.time()
         
-        for apartamento_id, vagas_ids in APARTAMENTOS_DUPLA_VAGA_FIXA.items():
-            try:
-                apartamento = Apartamento.objects.get(id=apartamento_id)
-                for vaga_id in vagas_ids:
-                    vaga = Vaga.objects.get(id=vaga_id)
-                    sorteios_para_criar.append(
-                        Sorteio(
-                            apartamento=apartamento,
-                            vaga=vaga
-                        )
-                    )
-                    vagas = [v for v in vagas if v.id != vaga_id]
-                apartamentos = [apt for apt in apartamentos if apt.id != apartamento_id]
-                logger.info(f"Vagas travadas duplas atribuídas: Apartamento {apartamento_id} -> Vagas {vagas_ids}")
-            except (Apartamento.DoesNotExist, Vaga.DoesNotExist) as e:
-                logger.error(f"Erro ao atribuir vagas travadas duplas: {e}")
-
-        logger.info(f"Vagas travadas concluídas em {time.time() - travada_start:.2f} segundos")
-
-        # Terceira Fase: Sorteio Normal por Bloco e Tipo
-        logger.info("Iniciando sorteio normal por bloco e tipo")
-        normal_start = time.time()
+        # Filtrar apartamentos que precisam de vagas descobertas
+        apartamentos_descobertas = [apt for apt in apartamentos if not apt.vaga_coberta]
+        vagas_descobertas = [v for v in vagas if not v.vaga_coberta]
         
-        # Agrupar apartamentos e vagas por bloco e tipo
-        apartamentos_por_bloco_tipo = {}
-        vagas_por_bloco_tipo = {}
-        
-        for apartamento in apartamentos:
-            bloco = apartamento.bloco
-            tipo = 'coberta' if apartamento.vaga_coberta else 'descoberta'
-            chave = f"{bloco}_{tipo}"
+        if apartamentos_descobertas and vagas_descobertas:
+            # Embaralhar apartamentos e vagas descobertas
+            random.shuffle(apartamentos_descobertas)
+            random.shuffle(vagas_descobertas)
             
-            if chave not in apartamentos_por_bloco_tipo:
-                apartamentos_por_bloco_tipo[chave] = []
-            apartamentos_por_bloco_tipo[chave].append(apartamento)
-            
-        for vaga in vagas:
-            bloco = vaga.bloco
-            tipo = 'coberta' if vaga.vaga_coberta else 'descoberta'
-            chave = f"{bloco}_{tipo}"
-            
-            if chave not in vagas_por_bloco_tipo:
-                vagas_por_bloco_tipo[chave] = []
-            vagas_por_bloco_tipo[chave].append(vaga)
-
-        # Sorteio por bloco e tipo
-        for chave in apartamentos_por_bloco_tipo:
-            if chave in vagas_por_bloco_tipo:
-                apartamentos_grupo = apartamentos_por_bloco_tipo[chave]
-                vagas_grupo = vagas_por_bloco_tipo[chave]
+            # Alocar vagas descobertas
+            i = 0
+            while i < len(apartamentos_descobertas) and i < len(vagas_descobertas):
+                apartamento = apartamentos_descobertas[i]
+                vaga = vagas_descobertas[i]
                 
-                # Embaralhar apartamentos e vagas
-                random.shuffle(apartamentos_grupo)
-                random.shuffle(vagas_grupo)
-                
-                # Alocar vagas para apartamentos
-                i = 0
-                while i < len(apartamentos_grupo) and i < len(vagas_grupo):
-                    apartamento = apartamentos_grupo[i]
-                    vaga = vagas_grupo[i]
-                    
-                    sorteios_para_criar.append(
-                        Sorteio(
-                            apartamento=apartamento,
-                            vaga=vaga
-                        )
+                sorteios_para_criar.append(
+                    Sorteio(
+                        apartamento=apartamento,
+                        vaga=vaga
                     )
-                    
-                    # Se o apartamento tem direito a duas vagas, tentar alocar uma segunda
-                    if apartamento.vaga_dupla and i + 1 < len(vagas_grupo):
-                        segunda_vaga = vagas_grupo[i + 1]
-                        sorteios_para_criar.append(
-                            Sorteio(
-                                apartamento=apartamento,
-                                vaga=segunda_vaga
-                            )
-                        )
-                        # Remover a segunda vaga da lista
-                        vagas_grupo.pop(i + 1)
-                    
-                    i += 1
+                )
+                
+                # Remover da lista geral
+                apartamentos = [apt for apt in apartamentos if apt.id != apartamento.id]
+                vagas = [v for v in vagas if v.id != vaga.id]
+                i += 1
 
-        logger.info(f"Sorteio normal concluído em {time.time() - normal_start:.2f} segundos")
+        logger.info(f"FASE 2 concluída em {time.time() - descoberta_start:.2f} segundos")
+
+        # FASE 3: Subsolo 3 para apartamentos do bloco Vivant
+        logger.info("FASE 3: Subsolo 3 para apartamentos do bloco Vivant")
+        subsolo3_start = time.time()
+        
+        # Filtrar apartamentos do bloco Vivant
+        apartamentos_vivant = [apt for apt in apartamentos if apt.bloco == '02.Vivant']
+        vagas_subsolo3 = [v for v in vagas if v.andar == 'SUBSOLO_3']
+        
+        if apartamentos_vivant and vagas_subsolo3:
+            # Embaralhar apartamentos Vivant e vagas subsolo 3
+            random.shuffle(apartamentos_vivant)
+            random.shuffle(vagas_subsolo3)
+            
+            # Alocar vagas subsolo 3 para apartamentos Vivant
+            i = 0
+            while i < len(apartamentos_vivant) and i < len(vagas_subsolo3):
+                apartamento = apartamentos_vivant[i]
+                vaga = vagas_subsolo3[i]
+                
+                sorteios_para_criar.append(
+                    Sorteio(
+                        apartamento=apartamento,
+                        vaga=vaga
+                    )
+                )
+                
+                # Remover da lista geral
+                apartamentos = [apt for apt in apartamentos if apt.id != apartamento.id]
+                vagas = [v for v in vagas if v.id != vaga.id]
+                i += 1
+
+        logger.info(f"FASE 3 concluída em {time.time() - subsolo3_start:.2f} segundos")
+
+        # FASE 4: Subsolo 1 para apartamentos do bloco Amour
+        logger.info("FASE 4: Subsolo 1 para apartamentos do bloco Amour")
+        subsolo1_start = time.time()
+        
+        # Filtrar apartamentos do bloco Amour
+        apartamentos_amour = [apt for apt in apartamentos if apt.bloco == '01.Amour']
+        vagas_subsolo1 = [v for v in vagas if v.andar == 'SUBSOLO_1']
+        
+        if apartamentos_amour and vagas_subsolo1:
+            # Embaralhar apartamentos Amour e vagas subsolo 1
+            random.shuffle(apartamentos_amour)
+            random.shuffle(vagas_subsolo1)
+            
+            # Alocar vagas subsolo 1 para apartamentos Amour
+            i = 0
+            while i < len(apartamentos_amour) and i < len(vagas_subsolo1):
+                apartamento = apartamentos_amour[i]
+                vaga = vagas_subsolo1[i]
+                
+                sorteios_para_criar.append(
+                    Sorteio(
+                        apartamento=apartamento,
+                        vaga=vaga
+                    )
+                )
+                
+                # Remover da lista geral
+                apartamentos = [apt for apt in apartamentos if apt.id != apartamento.id]
+                vagas = [v for v in vagas if v.id != vaga.id]
+                i += 1
+
+        logger.info(f"FASE 4 concluída em {time.time() - subsolo1_start:.2f} segundos")
+
+        # FASE 5: Subsolo 2 misturado (ambos os blocos)
+        logger.info("FASE 5: Subsolo 2 misturado para apartamentos restantes")
+        subsolo2_start = time.time()
+        
+        # Filtrar vagas subsolo 2
+        vagas_subsolo2 = [v for v in vagas if v.andar == 'SUBSOLO_2']
+        
+        if apartamentos and vagas_subsolo2:
+            # Embaralhar apartamentos restantes e vagas subsolo 2
+            random.shuffle(apartamentos)
+            random.shuffle(vagas_subsolo2)
+            
+            # Alocar vagas subsolo 2 para apartamentos restantes
+            i = 0
+            while i < len(apartamentos) and i < len(vagas_subsolo2):
+                apartamento = apartamentos[i]
+                vaga = vagas_subsolo2[i]
+                
+                sorteios_para_criar.append(
+                    Sorteio(
+                        apartamento=apartamento,
+                        vaga=vaga
+                    )
+                )
+                
+                i += 1
+
+        logger.info(f"FASE 5 concluída em {time.time() - subsolo2_start:.2f} segundos")
 
         # Criar todos os registros de uma vez usando bulk_create
         Sorteio.objects.bulk_create(sorteios_para_criar)
-        logger.info(f"Criação dos registros concluída em {time.time() - normal_start:.2f} segundos")
+        logger.info(f"Criação dos registros concluída em {time.time() - start_time:.2f} segundos")
 
         # Marcar o sorteio como iniciado e armazenar o horário de conclusão
         request.session['sorteio_iniciado'] = True
@@ -203,7 +240,7 @@ def fatto_passion_excel(request):
         ws[f'A{linha}'] = sorteio.apartamento.bloco
         ws[f'B{linha}'] = sorteio.apartamento.numero
         ws[f'C{linha}'] = sorteio.vaga.numero
-        ws[f'D{linha}'] = sorteio.vaga.bloco
+        ws[f'D{linha}'] = sorteio.vaga.get_andar_display()
         ws[f'E{linha}'] = "PNE" if sorteio.vaga.pne else "-"
         ws[f'F{linha}'] = "Coberta" if sorteio.vaga.vaga_coberta else "Descoberta"
         linha += 1
@@ -238,7 +275,14 @@ def fatto_passion_qrcode(request):
             filtro['apartamento__bloco'] = bloco_selecionado
             
         # Buscar os sorteios com os filtros aplicados
-        resultados_filtrados = Sorteio.objects.filter(**filtro)
+        resultados_filtrados = list(Sorteio.objects.filter(**filtro).select_related('apartamento', 'vaga'))
+        
+        # Debug: verificar se há dados
+        print(f"Filtro aplicado: {filtro}")
+        print(f"Resultados encontrados: {len(resultados_filtrados)}")
+        for resultado in resultados_filtrados:
+            print(f"Apartamento: {resultado.apartamento.numero} - Bloco: {resultado.apartamento.bloco}")
+            print(f"Vaga: {resultado.vaga.numero} - Andar: {resultado.vaga.get_andar_display()}")
 
     return render(request, 'fatto_passion/fatto_passion_qrcode.html', {
         'resultados_filtrados': resultados_filtrados,
