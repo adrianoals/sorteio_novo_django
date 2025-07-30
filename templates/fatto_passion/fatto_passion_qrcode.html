@@ -18,6 +18,7 @@
                     <label for="bloco" class="block text-sm font-medium tracking-wide text-black mb-2">Selecione o bloco:</label>
                     <select name="bloco" id="bloco" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-black mb-4" required>
                         <option value="" class="text-black">Selecione um bloco...</option>
+                        <option value="todos" class="text-black">Todos os Blocos</option>
                         <option value="01.Amour" class="text-black">01 - Amour</option>
                         <option value="02.Vivant" class="text-black">02 - Vivant</option>
                     </select>
@@ -27,7 +28,7 @@
                     <select name="apartamento" id="apartamento" class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-black max-h-60 overflow-y-auto" required>
                         <option value="" class="text-black">Selecione...</option>
                         {% for apartamento in apartamentos_disponiveis %}
-                        <option value="{{ apartamento.numero }}" class="text-black apartamento-option" data-bloco="{{ apartamento.bloco }}" {% if apartamento.numero == apartamento_selecionado %}selected{% endif %}>
+                        <option value="{{ apartamento.numero }}" class="text-black apartamento-option" data-bloco="{{ apartamento.bloco }}" data-numero="{{ apartamento.numero }}" {% if apartamento.numero == apartamento_selecionado %}selected{% endif %}>
                             Apartamento {{ apartamento.numero }} - Bloco {{ apartamento.bloco }}
                         </option>
                         {% endfor %}
@@ -91,13 +92,37 @@ document.addEventListener('DOMContentLoaded', function() {
         blocoSelect.addEventListener('change', function() {
             const selectedBloco = this.value;
             
-            if (selectedBloco) {
+            if (selectedBloco && selectedBloco !== 'todos') {
                 // Mostrar container do apartamento
                 apartamentoContainer.style.display = 'block';
                 
                 // Filtrar apartamentos do bloco selecionado
                 apartamentoOptions.forEach(option => {
                     if (option.dataset.bloco === selectedBloco) {
+                        option.style.display = '';
+                    } else {
+                        option.style.display = 'none';
+                    }
+                });
+
+                // Reset apartamento selection
+                apartamentoSelect.value = '';
+                
+                // Habilitar botão
+                submitBtn.disabled = false;
+            } else if (selectedBloco === 'todos') {
+                // Mostrar container do apartamento
+                apartamentoContainer.style.display = 'block';
+                
+                // Para "Todos os Blocos", mostrar apenas apartamentos únicos (sem duplicatas)
+                const numerosUnicos = new Set();
+                const opcoesVisiveis = [];
+                
+                apartamentoOptions.forEach(option => {
+                    const numero = option.dataset.numero;
+                    if (!numerosUnicos.has(numero)) {
+                        numerosUnicos.add(numero);
+                        opcoesVisiveis.push(option);
                         option.style.display = '';
                     } else {
                         option.style.display = 'none';

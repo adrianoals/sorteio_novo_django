@@ -357,9 +357,16 @@ def fatto_passion_qrcode(request):
         # Construir o filtro base com o número do apartamento
         filtro = {'apartamento__numero': numero_apartamento}
         
-        # Se um bloco específico foi selecionado, adicionar ao filtro
-        if bloco_selecionado:
+        # Se um bloco específico foi selecionado (e não for "todos"), adicionar ao filtro
+        if bloco_selecionado and bloco_selecionado != 'todos':
             filtro['apartamento__bloco'] = bloco_selecionado
+        # Se "todos" foi selecionado, mas um apartamento específico foi escolhido,
+        # precisamos determinar o bloco correto do apartamento selecionado
+        elif bloco_selecionado == 'todos':
+            # Buscar o apartamento específico para determinar seu bloco
+            apartamento_especifico = Apartamento.objects.filter(numero=numero_apartamento).first()
+            if apartamento_especifico:
+                filtro['apartamento__bloco'] = apartamento_especifico.bloco
             
         # Buscar os sorteios com os filtros aplicados
         resultados_filtrados = list(Sorteio.objects.filter(**filtro).select_related('apartamento', 'vaga'))
