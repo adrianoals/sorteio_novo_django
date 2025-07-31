@@ -431,6 +431,8 @@ def fatto_passion_sorteio_v2(request):
             320: 522,  # Apartamento 92 -> Vaga 240
             293: 538,  # Apartamento 45 -> Vaga 256
             283: 561,  # Apartamento 31 -> Vaga 279
+            379: 284,  # Apartamento 184-1 -> Vaga 2
+            380: 285,  # Apartamento 184-2 -> Vaga 3
         }
         
         for apartamento_id, vaga_id in vagas_travadas_v2.items():
