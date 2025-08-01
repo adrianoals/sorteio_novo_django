@@ -121,6 +121,40 @@ VAGAS_ESPECIFICAS = {
     531, # Vagas: 249 / 250
 }
 
+# Apartamentos específicos V2
+APARTAMENTOS_ESPECIFICOS_V2 = { 
+    373, # Apartamento 181 - 01.Amour
+    375, # Apartamento 182 - 01.Amour
+    377, # Apartamento 183 - 01.Amour
+    381, # Apartamento 185 - 01.Amour
+    383, # Apartamento 186 - 01.Amour
+    535, # Apartamento 191 - 02.Vivant
+    537, # Apartamento 192 - 02.Vivant		
+    539, # Apartamento 193 - 02.Vivant
+    541, # Apartamento 194 - 02.Vivant
+    543, # Apartamento 195 - 02.Vivant
+    545, # Apartamento 196 - 02.Vivant
+    547, # Apartamento 197 - 02.Vivant	
+    549, # Apartamento 198 - 02.Vivant
+}
+
+# Vagas específicas V2
+VAGAS_ESPECIFICAS_V2 = {
+    439, # Vagas: 157 / 158
+    441, # Vagas: 159 / 160
+    523, # Vagas: 241 / 242
+    525, # Vagas: 243 / 244
+    527, # Vagas: 245 / 246
+    529, # Vagas: 247 / 248
+    531, # Vagas: 249 / 250
+    535,  # Vaga 253 / 254
+    533,  # Vaga 251 / 253
+    379,  # Vaga 97 / 98
+    396,  # Vaga 114 / 115
+    381,  # Vaga 99 / 100
+    377,  # Vaga 95 / 96
+}
+
 # Create your views here.
 
 # View para realizar o sorteio
@@ -504,6 +538,41 @@ def fatto_passion_sorteio_v2(request):
                 logger.error(f"Erro ao atribuir vaga travada V2: {e}")
 
         logger.info(f"FASE 1 V2 concluída em {time.time() - pne_start:.2f} segundos")
+
+        # FASE 1.5: Apartamentos específicos V2 com vagas específicas V2
+        logger.info("FASE 1.5: Iniciando sorteio de apartamentos específicos V2")
+        especificos_start = time.time()
+        
+        # Filtrar apartamentos específicos V2 que ainda estão disponíveis
+        apartamentos_especificos_v2 = [apt for apt in apartamentos if apt.id in APARTAMENTOS_ESPECIFICOS_V2]
+        vagas_especificas_v2 = [v for v in vagas if v.id in VAGAS_ESPECIFICAS_V2]
+        
+        if apartamentos_especificos_v2 and vagas_especificas_v2:
+            # Embaralhar apartamentos e vagas específicas V2
+            random.shuffle(apartamentos_especificos_v2)
+            random.shuffle(vagas_especificas_v2)
+            
+            # Alocar vagas específicas V2 para apartamentos específicos V2
+            i = 0
+            while i < len(apartamentos_especificos_v2) and i < len(vagas_especificas_v2):
+                apartamento = apartamentos_especificos_v2[i]
+                vaga = vagas_especificas_v2[i]
+                
+                sorteios_para_criar.append(
+                    Sorteio(
+                        apartamento=apartamento,
+                        vaga=vaga
+                    )
+                )
+                
+                # Remover da lista geral
+                apartamentos = [apt for apt in apartamentos if apt.id != apartamento.id]
+                vagas = [v for v in vagas if v.id != vaga.id]
+                i += 1
+                
+                logger.info(f"Vaga específica V2 atribuída: Apartamento {apartamento.id} -> Vaga {vaga.id}")
+
+        logger.info(f"FASE 1.5 V2 concluída em {time.time() - especificos_start:.2f} segundos")
 
         # FASE 2: Apartamentos com vagas descobertas
         logger.info("FASE 2: Sorteio de apartamentos com vagas descobertas")
