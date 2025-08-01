@@ -46,11 +46,8 @@ APARTAMENTOS_VAGAS_FIXAS = {
     371: 291,  # Apartamento 175 -> Vaga 9
     372: 520,  # Apartamento 176 -> Vaga 238
     379: 284,  # Apartamento 184-1 -> Vaga 2
-    380: 285,  # Apartamento 184-2 -> Vaga 3
     381: 535,  # Apartamento 185-1 -> Vaga 253
-    382: 536,  # Apartamento 185-2 -> Vaga 254
-    383: 533,  # Apartamento 186-1 -> Vaga 251
-    384: 534,  # Apartamento 186-2 -> Vaga 252
+    383: 533,  # Apartamento 186-1 -> Vaga 251 
     385: 296,  # Apartamento 2 -> Vaga 14
     386: 293,  # Apartamento 3 -> Vaga 11
     387: 342,  # Apartamento 4 -> Vaga 60
@@ -96,13 +93,32 @@ APARTAMENTOS_VAGAS_FIXAS = {
     531: 418,  # Apartamento 185 -> Vaga 136
     532: 344,  # Apartamento 186 -> Vaga 62
     535: 379,  # Apartamento 191-1 -> Vaga 97
-    536: 380,  # Apartamento 191-2 -> Vaga 98
     541: 396,  # Apartamento 194-1 -> Vaga 114
-    542: 397,  # Apartamento 194-2 -> Vaga 115
     545: 381,  # Apartamento 196-1 -> Vaga 99
-    546: 382,  # Apartamento 196-2 -> Vaga 100
     547: 377,  # Apartamento 197-1 -> Vaga 95
-    548: 378,  # Apartamento 197-2 -> Vaga 96
+    
+}
+
+# Apartamentos específicos
+APARTAMENTOS_ESPECIFICOS = { 
+    373, # Apartamento 181 - 01.Amour
+    375, # Apartamento 182 - 01.Amour
+    377, # Apartamento 183 - 01.Amour
+    537, # Apartamento 192 - 02.Vivant		
+    539, # Apartamento 193 - 02.Vivant		
+    543, # Apartamento 195 - 02.Vivant				
+    549, # Apartamento 198 - 02.Vivant
+} 
+
+# Vagas específicas
+VAGAS_ESPECIFICAS = {
+    439, # Vagas: 157 / 158
+    441, # Vagas: 159 / 160
+    523, # Vagas: 241 / 242
+    525, # Vagas: 243 / 244
+    527, # Vagas: 245 / 246
+    529, # Vagas: 247 / 248
+    531, # Vagas: 249 / 250
 }
 
 # Create your views here.
@@ -150,6 +166,41 @@ def fatto_passion_sorteio(request):
                 logger.error(f"Erro ao atribuir vaga travada: {e}")
 
         logger.info(f"FASE 1 concluída em {time.time() - pne_start:.2f} segundos")
+
+        # FASE 1.5: Apartamentos específicos com vagas específicas
+        logger.info("FASE 1.5: Iniciando sorteio de apartamentos específicos")
+        especificos_start = time.time()
+        
+        # Filtrar apartamentos específicos que ainda estão disponíveis
+        apartamentos_especificos = [apt for apt in apartamentos if apt.id in APARTAMENTOS_ESPECIFICOS]
+        vagas_especificas = [v for v in vagas if v.id in VAGAS_ESPECIFICAS]
+        
+        if apartamentos_especificos and vagas_especificas:
+            # Embaralhar apartamentos e vagas específicas
+            random.shuffle(apartamentos_especificos)
+            random.shuffle(vagas_especificas)
+            
+            # Alocar vagas específicas para apartamentos específicos
+            i = 0
+            while i < len(apartamentos_especificos) and i < len(vagas_especificas):
+                apartamento = apartamentos_especificos[i]
+                vaga = vagas_especificas[i]
+                
+                sorteios_para_criar.append(
+                    Sorteio(
+                        apartamento=apartamento,
+                        vaga=vaga
+                    )
+                )
+                
+                # Remover da lista geral
+                apartamentos = [apt for apt in apartamentos if apt.id != apartamento.id]
+                vagas = [v for v in vagas if v.id != vaga.id]
+                i += 1
+                
+                logger.info(f"Vaga específica atribuída: Apartamento {apartamento.id} -> Vaga {vaga.id}")
+
+        logger.info(f"FASE 1.5 concluída em {time.time() - especificos_start:.2f} segundos")
 
         # FASE 2: Apartamentos com vagas descobertas
         logger.info("FASE 2: Sorteio de apartamentos com vagas descobertas")
