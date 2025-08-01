@@ -512,6 +512,7 @@ def fatto_passion_sorteio_v2(request):
             493: 330,  # Apartamento 137 -> Vaga 48
             449: 351,  # Apartamento 83 -> Vaga 69
             314: 422,  # Apartamento 82 -> Vaga 140
+            330: 423,  # Apartamento 106 -> Vaga 141
             348: 516,  # Apartamento 136 -> Vaga 234
             320: 522,  # Apartamento 92 -> Vaga 240
             293: 538,  # Apartamento 45 -> Vaga 256
