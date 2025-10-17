@@ -10,7 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-from pathlib import Path, os
+from pathlib import Path
+import os
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,13 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = str(os.getenv('SECRET_KEY'))
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
-# ALLOWED_HOSTS = ["*",]
+DEBUG = True
+ALLOWED_HOSTS = ["*",]
 
 
 # HOSTINGER
-DEBUG = False
-ALLOWED_HOSTS = ['69.62.96.47', 'sn.sorteionovo.com.br', 'www.sn.sorteionovo.com.br']
+# DEBUG = False
+# ALLOWED_HOSTS = ['69.62.96.47', 'sn.sorteionovo.com.br', 'www.sn.sorteionovo.com.br']
 
 
 # Confiar no cabeçalho que o Traefik envia dizendo que é https
