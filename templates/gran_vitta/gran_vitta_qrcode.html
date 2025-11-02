@@ -28,23 +28,23 @@
                             Filtrar
                         </button>
                     </div>
-                </form>
-            </div>
+                    </form>
+        </div>
 
-            {% if resultados_filtrados %}
+        {% if resultados_filtrados %}
             <div class="mt-12">
                 <h3 class="text-2xl font-light text-gray-900 text-center mb-6">Vagas para o apartamento: {{ apartamento_selecionado }}</h3>
                 <div class="space-y-4 max-w-md mx-auto">
-                    {% for sorteio in resultados_filtrados %}
+                {% for sorteio in resultados_filtrados %}
                     <div class="bg-gradient-to-r from-[#5E17EB]/10 to-[#5E17EB]/5 rounded-lg p-4 shadow-sm">
                         <h5 class="text-lg font-medium text-gray-900 text-center">
-                            {{ sorteio.vaga.numero }} - {{ sorteio.vaga.subsolo }}
-                        </h5>
+                        {{ sorteio.vaga.numero }} - {{ sorteio.vaga.subsolo }}
+                    </h5>
                     </div>
-                    {% endfor %}
+                {% endfor %}
                 </div>
             </div>
-            {% endif %}
+        {% endif %}
         </div>
     </div>
 </div>

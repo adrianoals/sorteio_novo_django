@@ -26,6 +26,22 @@ def tres_coelhos_sorteio(request):
         print(f"Vagas PNE Livres: {len(vagas_pne_livres)}")
         print(f"Vagas Livres Normais: {len(vagas_livres_normais)}")
 
+        # SIMPLIFICAÇÃO: Mapeamento fixo de subsolo -> vaga PNE livre
+        # Como existe exatamente 1 vaga PNE livre por subsolo, pré-mapeamos
+        # Vagas PNE esperadas: Subsolo 1 → ID 43, Subsolo 2 → ID 95
+        vaga_pne_esperada = {1: 43, 2: 95}  # Mapeamento esperado: subsolo -> id_vaga
+        
+        vaga_pne_por_subsolo = {}
+        for vaga_pne in vagas_pne_livres:
+            if vaga_pne.subsolo not in vaga_pne_por_subsolo:
+                vaga_pne_por_subsolo[vaga_pne.subsolo] = vaga_pne
+                # Validar se encontrou a vaga PNE esperada
+                id_esperado = vaga_pne_esperada.get(vaga_pne.subsolo)
+                status_validacao = "✅ CORRETO" if vaga_pne.id == id_esperado else f"⚠️ ESPERADO ID {id_esperado}"
+                print(f"Mapeamento fixo: Subsolo {vaga_pne.subsolo} → Vaga PNE {vaga_pne.numero} (ID: {vaga_pne.id}) {status_validacao}")
+            else:
+                print(f"⚠️ ATENÇÃO: Múltiplas vagas PNE no Subsolo {vaga_pne.subsolo} - usando a primeira encontrada")
+
         # Lista para armazenar todos os sorteios (bulk insert - otimizado)
         sorteios_para_criar = []
 
@@ -33,7 +49,8 @@ def tres_coelhos_sorteio(request):
         # Processar cada subsolo separadamente
         subsolos = set()
         subsolos.update([apt.subsolo for apt in apartamentos_pne + apartamentos_demais if apt.subsolo])
-        subsolos.update([vaga.subsolo for vaga in vagas_pne_livres + vagas_livres_normais])
+        subsolos.update([vaga.subsolo for vaga in vagas_livres_normais])
+        subsolos.update(vaga_pne_por_subsolo.keys())
 
         print(f"Subsolos encontrados: {sorted(subsolos)}")
 
@@ -43,65 +60,82 @@ def tres_coelhos_sorteio(request):
             # Separar apartamentos e vagas deste subsolo
             pne_subsolo = [apt for apt in apartamentos_pne if apt.subsolo == subsolo]
             demais_subsolo = [apt for apt in apartamentos_demais if apt.subsolo == subsolo]
-            vagas_pne_subsolo = [vaga for vaga in vagas_pne_livres if vaga.subsolo == subsolo]
             vagas_normais_subsolo = [vaga for vaga in vagas_livres_normais if vaga.subsolo == subsolo]
 
             print(f"Subsolo {subsolo}: {len(pne_subsolo)} PNE, {len(demais_subsolo)} Demais")
-            print(f"Subsolo {subsolo}: {len(vagas_pne_subsolo)} vagas PNE, {len(vagas_normais_subsolo)} vagas normais")
+            print(f"Subsolo {subsolo}: {len(vagas_normais_subsolo)} vagas livres normais")
 
-            # REGRA 2: PRIORIDADE PNE (dentro deste subsolo)
-            # Se não há PNE neste subsolo, todas as vagas PNE entram no pool geral deste subsolo
-            if not pne_subsolo:
-                vagas_normais_subsolo.extend(vagas_pne_subsolo)
-                vagas_pne_subsolo = []
-                print(f"Subsolo {subsolo}: Sem PNE - todas vagas PNE incluídas no pool geral")
+            # Inicializar PNE remanescentes (sempre inicializado para evitar erros)
+            pne_remanescentes_subsolo = []
 
-            # ETAPA 1: PNE recebem vagas PNE Livres (se houver PNE e vagas PNE neste subsolo)
-            if pne_subsolo and vagas_pne_subsolo:
+            # ETAPA 1: 1 PNE do subsolo ocupa a vaga PNE fixa daquele subsolo
+            vaga_pne_fixa = vaga_pne_por_subsolo.get(subsolo)
+            
+            if vaga_pne_fixa and pne_subsolo:
+                # Sortear 1 PNE para ocupar a vaga PNE fixa
                 random.shuffle(pne_subsolo)
-                random.shuffle(vagas_pne_subsolo)
+                pne_escolhido = pne_subsolo[0]
                 
-                for i, vaga_pne in enumerate(vagas_pne_subsolo):
-                    if i < len(pne_subsolo):
-                        # PNE recebe vaga PNE Livre do mesmo subsolo
-                        sorteios_para_criar.append(
-                            Sorteio(apartamento=pne_subsolo[i], vaga=vaga_pne)
-                        )
-                        print(f"Subsolo {subsolo}: Sorteado PNE {pne_subsolo[i].numero} → Vaga PNE {vaga_pne.numero}")
+                # Atribuir vaga PNE fixa ao PNE escolhido
+                sorteios_para_criar.append(
+                    Sorteio(apartamento=pne_escolhido, vaga=vaga_pne_fixa)
+                )
+                print(f"Subsolo {subsolo}: Sorteado PNE {pne_escolhido.numero} → Vaga PNE {vaga_pne_fixa.numero} (fixa)")
 
-                # Separar PNE que receberam vaga dos que ficaram sem
-                pne_com_vaga = len(vagas_pne_subsolo)
-                pne_remanescentes_subsolo = pne_subsolo[pne_com_vaga:]  # PNE que não receberam vaga PNE
+                # PNE restantes do mesmo subsolo concorrem exclusivamente às vagas livres remanescentes
+                pne_remanescentes_subsolo = pne_subsolo[1:]
                 
-                # REGRA 3: Vagas PNE não usadas entram no pool geral deste subsolo
-                if len(vagas_pne_subsolo) > len(pne_subsolo):
-                    vagas_pne_nao_usadas = vagas_pne_subsolo[len(pne_subsolo):]
-                    vagas_normais_subsolo.extend(vagas_pne_nao_usadas)
-                    print(f"Subsolo {subsolo}: {len(vagas_pne_nao_usadas)} vagas PNE não usadas incluídas no pool geral")
-            else:
-                # Se não há vagas PNE ou não há PNE que receberam, todos os PNE vão para etapa 2
+                if pne_remanescentes_subsolo:
+                    print(f"Subsolo {subsolo}: {len(pne_remanescentes_subsolo)} PNE remanescentes que devem receber vaga livre normal")
+            elif pne_subsolo:
+                # Há PNE mas não há vaga PNE fixa neste subsolo - todos os PNE vão para sorteio de vagas livres
                 pne_remanescentes_subsolo = pne_subsolo
-                # Se sobram vagas PNE não usadas, incluir no pool geral
-                if vagas_pne_subsolo:
-                    vagas_normais_subsolo.extend(vagas_pne_subsolo)
-                    print(f"Subsolo {subsolo}: Todas vagas PNE incluídas no pool geral")
+                print(f"Subsolo {subsolo}: {len(pne_remanescentes_subsolo)} PNE sem vaga PNE fixa - todos devem receber vaga livre normal")
+            elif vaga_pne_fixa:
+                # Há vaga PNE fixa mas não há PNE - vaga PNE não é atribuída (fica disponível?)
+                # Na verdade, se não há PNE, a vaga PNE não deve ser atribuída a ninguém na Fase 1
+                print(f"Subsolo {subsolo}: Vaga PNE fixa disponível mas sem PNE - vaga não será atribuída na Fase 1")
 
-            # ETAPA 2: Sorteio geral deste subsolo
-            apartamentos_disponiveis_subsolo = pne_remanescentes_subsolo + demais_subsolo
-            
-            random.shuffle(apartamentos_disponiveis_subsolo)
-            random.shuffle(vagas_normais_subsolo)
-            
-            for i, apartamento in enumerate(apartamentos_disponiveis_subsolo):
-                if i < len(vagas_normais_subsolo):
-                    # Apartamento recebe vaga livre do mesmo subsolo
+            # ETAPA 1b: PNE remanescentes recebem vagas livres (PRIORIDADE - antes dos demais)
+            if pne_remanescentes_subsolo and vagas_normais_subsolo:
+                random.shuffle(pne_remanescentes_subsolo)
+                random.shuffle(vagas_normais_subsolo)
+                
+                # Atribuir vagas livres aos PNE remanescentes (número máximo é o menor entre vagas e PNE)
+                num_atribuicoes_pne_remanescentes = min(len(pne_remanescentes_subsolo), len(vagas_normais_subsolo))
+                
+                for i in range(num_atribuicoes_pne_remanescentes):
+                    # PNE remanescente recebe vaga livre do mesmo subsolo
                     sorteios_para_criar.append(
-                        Sorteio(apartamento=apartamento, vaga=vagas_normais_subsolo[i])
+                        Sorteio(apartamento=pne_remanescentes_subsolo[i], vaga=vagas_normais_subsolo[i])
                     )
-                    print(f"Subsolo {subsolo}: Sorteado {apartamento.numero} → Vaga Livre {vagas_normais_subsolo[i].numero}")
-                else:
-                    # Sem mais vagas livres neste subsolo - apartamento vai para sorteio de duplas
-                    print(f"Subsolo {subsolo}: Apartamento {apartamento.numero} sem vaga livre → vai para sorteio de duplas")
+                    print(f"Subsolo {subsolo}: Sorteado PNE remanescente {pne_remanescentes_subsolo[i].numero} → Vaga Livre {vagas_normais_subsolo[i].numero}")
+                
+                # Remover vagas já atribuídas dos PNE remanescentes
+                vagas_normais_subsolo = vagas_normais_subsolo[num_atribuicoes_pne_remanescentes:]
+                
+                if len(pne_remanescentes_subsolo) > num_atribuicoes_pne_remanescentes:
+                    pne_sem_vaga = len(pne_remanescentes_subsolo) - num_atribuicoes_pne_remanescentes
+                    print(f"Subsolo {subsolo}: ⚠️ {pne_sem_vaga} PNE remanescente(s) sem vaga livre (vagas esgotadas neste subsolo)")
+
+            # ETAPA 1c: Demais apartamentos disputam as vagas livres restantes
+            if demais_subsolo and vagas_normais_subsolo:
+                random.shuffle(demais_subsolo)
+                random.shuffle(vagas_normais_subsolo)
+                
+                # Atribuir vagas livres aos demais apartamentos (número máximo é o menor entre vagas e apartamentos)
+                num_atribuicoes_demais = min(len(demais_subsolo), len(vagas_normais_subsolo))
+                
+                for i in range(num_atribuicoes_demais):
+                    # Demais apartamento recebe vaga livre do mesmo subsolo
+                    sorteios_para_criar.append(
+                        Sorteio(apartamento=demais_subsolo[i], vaga=vagas_normais_subsolo[i])
+                    )
+                    print(f"Subsolo {subsolo}: Sorteado {demais_subsolo[i].numero} → Vaga Livre {vagas_normais_subsolo[i].numero}")
+                
+                if len(demais_subsolo) > num_atribuicoes_demais:
+                    demais_sem_vaga = len(demais_subsolo) - num_atribuicoes_demais
+                    print(f"Subsolo {subsolo}: {demais_sem_vaga} apartamento(s) sem vaga livre → vai(ão) para sorteio de duplas")
 
         # Criar todos os sorteios de uma vez (MUITO MAIS RÁPIDO)
         if sorteios_para_criar:
@@ -195,63 +229,166 @@ def tres_coelhos_dupla(request):
         SorteioDupla.objects.all().delete()
         print("Sorteios anteriores apagados (duplas).")
 
-        # Obter todas as duplas de apartamentos (pré-selecionadas)
-        duplas_apartamentos = list(DuplaApartamentos.objects.all())
+        # Obter apartamentos que já foram sorteados na Fase 1 (têm vaga livre)
+        apartamentos_com_vaga_livre = set(Sorteio.objects.values_list('apartamento_id', flat=True))
         
-        # Capturar IDs de apartamentos que fazem parte das duplas
-        apartamentos_em_duplas_ids = [dupla.apartamento_1.id for dupla in duplas_apartamentos] + \
-                                    [dupla.apartamento_2.id for dupla in duplas_apartamentos if dupla.apartamento_2]
+        # Obter todas as duplas pré-cadastradas
+        duplas_pre_cadastradas = list(DuplaApartamentos.objects.all())
+        
+        # REGRA 2: Filtrar duplas válidas (ambos não foram sorteados na Fase 1)
+        duplas_validas = []
+        for dupla in duplas_pre_cadastradas:
+            apt1_sorteado = dupla.apartamento_1.id in apartamentos_com_vaga_livre
+            apt2_sorteado = dupla.apartamento_2.id in apartamentos_com_vaga_livre if dupla.apartamento_2 else False
+            
+            # Dupla é válida se nenhum dos apartamentos foi sorteado na Fase 1
+            if not apt1_sorteado and not apt2_sorteado and dupla.apartamento_2:
+                # REGRA 3: Verificar se ambos pertencem ao mesmo subsolo
+                if dupla.apartamento_1.subsolo == dupla.apartamento_2.subsolo:
+                    duplas_validas.append(dupla)
+                else:
+                    print(f"Dupla desfeita: Apartamentos {dupla.apartamento_1.numero} e {dupla.apartamento_2.numero} em subsolos diferentes")
+            else:
+                print(f"Dupla desfeita: Um dos apartamentos já foi sorteado na Fase 1 ({dupla.apartamento_1.numero}, {dupla.apartamento_2.numero if dupla.apartamento_2 else 'N/A'})")
 
-        # Obter apartamentos que não foram sorteados e que não fazem parte de nenhuma dupla
-        apartamentos_nao_sorteados = list(Apartamento.objects.exclude(id__in=apartamentos_em_duplas_ids).exclude(sorteio__isnull=False))
+        print(f"Duplas válidas (pré-configuradas): {len(duplas_validas)}")
 
-        print(f"Duplas formadas: {len(duplas_apartamentos)}")
-        print(f"Apartamentos não sorteados: {len(apartamentos_nao_sorteados)}")
+        # Obter apartamentos que NÃO foram sorteados na Fase 1
+        apartamentos_sem_vaga = list(Apartamento.objects.exclude(id__in=apartamentos_com_vaga_livre))
 
-        # Obter as vagas duplas disponíveis (para duplas) filtrando por subsolo
-        vagas_duplas = list(Vaga.objects.filter(tipo='DUPLA', sorteio__isnull=True))
+        # Obter vagas duplas disponíveis (não sorteadas na Fase 1)
+        # Como SorteioDupla já foi limpo no início, não precisamos filtrar por SorteioDupla
+        # Uma vaga dupla não pode estar em Sorteio (Fase 1 - vagas livres)
+        vagas_duplas_ids_nao_usadas_na_fase1 = set(Vaga.objects.filter(tipo='DUPLA').exclude(
+            id__in=Sorteio.objects.values_list('vaga_id', flat=True)
+        ).values_list('id', flat=True))
+        
+        vagas_duplas = list(Vaga.objects.filter(id__in=vagas_duplas_ids_nao_usadas_na_fase1).select_related('dupla_com'))
 
+        print(f"Apartamentos sem vaga (da Fase 1): {len(apartamentos_sem_vaga)}")
         print(f"Vagas duplas disponíveis: {len(vagas_duplas)}")
 
-        # **Sorteio de vagas duplas para apartamentos em duplas**
-        random.shuffle(duplas_apartamentos)
-        for dupla in duplas_apartamentos:
-            # Filtrar as vagas de acordo com o subsolo do primeiro apartamento da dupla
-            vagas_duplas_subsolo = [vaga for vaga in vagas_duplas if vaga.subsolo == dupla.apartamento_1.subsolo]
+        # Lista para armazenar todos os sorteios (bulk insert - otimizado)
+        sorteios_dupla_para_criar = []
+
+        # REGRA 1: CRITÉRIO DE SUBSOLO (PRIORIDADE MÁXIMA)
+        # Processar cada subsolo separadamente
+        subsolos = set()
+        subsolos.update([apt.subsolo for apt in apartamentos_sem_vaga if apt.subsolo])
+        subsolos.update([vaga.subsolo for vaga in vagas_duplas])
+
+        print(f"Subsolos encontrados: {sorted(subsolos)}")
+
+        for subsolo in sorted(subsolos):
+            print(f"\n--- Processando Subsolo {subsolo} (Vagas Duplas) ---")
+
+            # Separar duplas válidas deste subsolo
+            duplas_subsolo = [d for d in duplas_validas if d.apartamento_1.subsolo == subsolo]
+            apartamentos_subsolo = [apt for apt in apartamentos_sem_vaga if apt.subsolo == subsolo]
+            vagas_duplas_subsolo = [vaga for vaga in vagas_duplas if vaga.subsolo == subsolo]
+
+            print(f"Subsolo {subsolo}: {len(duplas_subsolo)} duplas válidas, {len(apartamentos_subsolo)} apartamentos sem vaga")
+            print(f"Subsolo {subsolo}: {len(vagas_duplas_subsolo)} vagas duplas disponíveis")
+            print(f"Subsolo {subsolo}: Apartamentos IDs: {[apt.numero for apt in apartamentos_subsolo]}")
+
+            # REGRA 3: Sorteio das duplas pré-configuradas (primeiro)
+            random.shuffle(duplas_subsolo)
+            random.shuffle(vagas_duplas_subsolo)
             
-            if vagas_duplas_subsolo:
-                vaga_escolhida_1 = random.choice(vagas_duplas_subsolo)
-                vaga_escolhida_2 = vaga_escolhida_1.dupla_com  # Vaga dupla associada
+            # Criar lista de IDs de apartamentos já sorteados nesta etapa
+            apartamentos_sorteados_dupla = set()
+            
+            # Criar dicionário para mapear vagas e seus pares
+            vagas_disponiveis_set = set(vagas_duplas_subsolo)
+            vagas_usadas = set()
+            
+            for dupla in duplas_subsolo:
+                # Encontrar par de vagas duplas disponíveis
+                vaga_encontrada = None
+                vaga_par = None
+                
+                # Buscar par de vagas duplas (uma deve ter dupla_com apontando para a outra)
+                for vaga in vagas_duplas_subsolo:
+                    if vaga.id in vagas_usadas:
+                        continue
+                    
+                    if vaga.dupla_com and vaga.dupla_com.id in [v.id for v in vagas_duplas_subsolo if v.id not in vagas_usadas]:
+                        vaga_encontrada = vaga
+                        vaga_par = vaga.dupla_com
+                        break
+                
+                if vaga_encontrada and vaga_par:
+                    # Criar sorteios da dupla
+                    sorteios_dupla_para_criar.append(
+                        SorteioDupla(apartamento=dupla.apartamento_1, vaga=vaga_encontrada)
+                    )
+                    sorteios_dupla_para_criar.append(
+                        SorteioDupla(apartamento=dupla.apartamento_2, vaga=vaga_par)
+                    )
+                    
+                    apartamentos_sorteados_dupla.add(dupla.apartamento_1.id)
+                    apartamentos_sorteados_dupla.add(dupla.apartamento_2.id)
+                    
+                    # Marcar vagas como usadas (evita usar remove())
+                    vagas_usadas.add(vaga_encontrada.id)
+                    vagas_usadas.add(vaga_par.id)
+                    
+                    print(f"Subsolo {subsolo}: Dupla sorteada - {dupla.apartamento_1.numero} → Vaga {vaga_encontrada.numero}, {dupla.apartamento_2.numero} → Vaga {vaga_par.numero}")
+                else:
+                    print(f"Subsolo {subsolo}: Dupla ({dupla.apartamento_1.numero}, {dupla.apartamento_2.numero}) sem par de vagas duplas disponível")
 
-                # Criar o sorteio da dupla
-                SorteioDupla.objects.create(apartamento=dupla.apartamento_1, vaga=vaga_escolhida_1)
-                SorteioDupla.objects.create(apartamento=dupla.apartamento_2, vaga=vaga_escolhida_2)
+            # REGRA 4: Sorteio dos apartamentos restantes - Sem formar novas duplas (atribuição individual)
+            apartamentos_restantes_subsolo = [apt for apt in apartamentos_subsolo if apt.id not in apartamentos_sorteados_dupla]
+            
+            print(f"Subsolo {subsolo}: Apartamentos restantes após duplas pré-configuradas: {len(apartamentos_restantes_subsolo)}")
+            print(f"Subsolo {subsolo}: Apartamentos restantes IDs: {[apt.numero for apt in apartamentos_restantes_subsolo]}")
+            print(f"Subsolo {subsolo}: Vagas usadas até agora: {len(vagas_usadas)}")
+            
+            random.shuffle(apartamentos_restantes_subsolo)
+            
+            # REGRA 4: Sorteio dos apartamentos restantes - Sem formar novas duplas (atribuição individual)
+            # IMPORTANTE: Quando atribuímos uma vaga dupla individualmente, ela é atribuída sozinha.
+            # A vaga par (dupla_com) permanece disponível para ser atribuída a outro apartamento.
+            # Isso significa que se temos um par de vagas (Vaga A <-> Vaga B), ambas podem ser atribuídas individualmente.
+            for apartamento in apartamentos_restantes_subsolo:
+                # Filtrar vagas não usadas (atualizado a cada iteração)
+                vagas_disponiveis = [v for v in vagas_duplas_subsolo if v.id not in vagas_usadas]
+                
+                if vagas_disponiveis:
+                    # Apartamento recebe vaga dupla individualmente (sem formar par com outro apartamento)
+                    # A vaga par (dupla_com) permanece disponível para outro apartamento
+                    vaga_escolhida = vagas_disponiveis[0]  # Pega a primeira vaga disponível
+                    sorteios_dupla_para_criar.append(
+                        SorteioDupla(apartamento=apartamento, vaga=vaga_escolhida)
+                    )
+                    
+                    apartamentos_sorteados_dupla.add(apartamento.id)
+                    vagas_usadas.add(vaga_escolhida.id)
+                    # NÃO marcamos a vaga par (dupla_com) como usada aqui, pois ela pode ser atribuída a outro apartamento
+                    
+                    par_info = f" (Par: {vaga_escolhida.dupla_com.numero})" if vaga_escolhida.dupla_com else ""
+                    print(f"Subsolo {subsolo}: Apartamento {apartamento.numero} → Vaga Dupla {vaga_escolhida.numero}{par_info}")
+                else:
+                    print(f"Subsolo {subsolo}: Apartamento {apartamento.numero} sem vaga dupla disponível neste subsolo")
+                    break  # Não há mais vagas disponíveis, parar o loop
 
-                print(f"Sorteado: Apartamento {dupla.apartamento_1.numero} -> Vaga {vaga_escolhida_1.numero}")
-                print(f"Sorteado: Apartamento {dupla.apartamento_2.numero} -> Vaga {vaga_escolhida_2.numero}")
-
-                # Remover as vagas duplas da lista de disponíveis
-                vagas_duplas.remove(vaga_escolhida_1)
-            else:
-                print(f"Sem vagas duplas disponíveis no subsolo {dupla.apartamento_1.subsolo}")
-                break  # Sem mais vagas duplas no subsolo
-
-        # **Sorteio para apartamentos não sorteados**
-        # Apartamentos que não formaram duplas vão concorrer às vagas duplas restantes
-        random.shuffle(apartamentos_nao_sorteados)
+        # Criar todos os sorteios de uma vez (MUITO MAIS RÁPIDO)
+        if sorteios_dupla_para_criar:
+            SorteioDupla.objects.bulk_create(sorteios_dupla_para_criar)
+            print(f"\nTotal de sorteios de duplas criados: {len(sorteios_dupla_para_criar)}")
+        else:
+            print("\n⚠️ ATENÇÃO: Nenhum sorteio de dupla foi criado!")
         
-        for apartamento in apartamentos_nao_sorteados:
-            # Filtrar as vagas de acordo com o subsolo do apartamento
-            vagas_restantes_subsolo = [vaga for vaga in vagas_duplas if vaga.subsolo == apartamento.subsolo]
-
-            if vagas_restantes_subsolo:
-                vaga_escolhida = random.choice(vagas_restantes_subsolo)
-                SorteioDupla.objects.create(apartamento=apartamento, vaga=vaga_escolhida)
-                print(f"Sorteado: Apartamento {apartamento.numero} -> Vaga {vaga_escolhida.numero}")
-                vagas_duplas.remove(vaga_escolhida)
-            else:
-                print(f"Sem vagas disponíveis no subsolo {apartamento.subsolo}")
-                break  # Sem mais vagas disponíveis no subsolo
+        # Verificação final: contar vagas duplas não atribuídas
+        total_vagas_duplas = Vaga.objects.filter(tipo='DUPLA').count()
+        vagas_duplas_usadas_fase1 = Sorteio.objects.filter(vaga__tipo='DUPLA').count()
+        vagas_duplas_usadas_fase2 = SorteioDupla.objects.count()
+        
+        print(f"\n📊 RESUMO FINAL:")
+        print(f"Total de vagas duplas no sistema: {total_vagas_duplas}")
+        print(f"Vagas duplas usadas na Fase 1 (erro): {vagas_duplas_usadas_fase1}")
+        print(f"Vagas duplas atribuídas na Fase 2: {vagas_duplas_usadas_fase2}")
+        print(f"Vagas duplas ainda disponíveis: {total_vagas_duplas - vagas_duplas_usadas_fase1 - vagas_duplas_usadas_fase2}")
 
         # Armazenar informações do sorteio na sessão
         request.session['sorteio_dupla_iniciado'] = True
