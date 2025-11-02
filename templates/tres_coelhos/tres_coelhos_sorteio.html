@@ -1,80 +1,100 @@
-{% extends 'sorteio_novo/base_sorteio.html' %}
+{% extends 'sorteio_novo/base_tailwind.html' %}
 {% load static %}
-{% block content %}
 
-<div class="container">
-    <h1 class="fw-normal lh-1 text-center mb-5" id="titulo">Sorteio de Vagas - Condomínio Tres Coelhos</h1>
+{% block content %}
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">Sorteio de Vagas - Condomínio Tres Coelhos</h1>
+            
+            {% if not vagas_atribuidas %}
+            <form method="post" action="{% url 'tres_coelhos_sorteio' %}" class="max-w-md mx-auto">
+                {% csrf_token %}
+                <div class="text-center">
+                    <h5 class="text-lg font-light text-gray-600 mb-6">Clique aqui para iniciar o sorteio</h5>
+                    <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105" id="botao-iniciar">
+                        Realizar Sorteio
+                    </button>
+                </div>
+            </form>
+            {% endif %}
+
+            {% if vagas_atribuidas %}
+            <div class="loading-container bg-gradient-to-b from-[#5E17EB]/5 to-white/80 backdrop-blur-sm rounded-xl p-8" id="loadingContainer">                          
+                <div class="loading">
+                    <img src="{% static 'assets/images/sorteio2.gif' %}" alt="Sorteando..." class="loading-gif mt-5">
+                </div>
+            </div>
+            {% endif %}
+
+            {% if resultados_sorteio %}
+            <div class="mt-12">
+                <h2 class="text-2xl font-light tracking-tight text-gray-900 text-center mb-8">Resultados do Sorteio</h2>
+                <div class="space-y-4">
+                    {% for sorteio in resultados_sorteio %}
+                    <div class="linha-apartamento bg-gray-50 rounded-lg p-6 shadow-sm hover:shadow-md transition duration-300 opacity-0">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-2">Apartamento</label>
+                                <input type="text" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-medium" value="{{ sorteio.apartamento.numero }}" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-2">Vaga</label>
+                                <input type="text" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-medium text-sm" value="{{ sorteio.vaga.numero }}" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-2">Subsolo</label>
+                                <input type="text" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-medium" value="Subsolo {{ sorteio.vaga.subsolo }}" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-2">Tipo da Vaga</label>
+                                <input type="text" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-medium" value="{{ sorteio.vaga.get_tipo_display }}" readonly>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium tracking-wide text-gray-700 mb-2">Especialidade</label>
+                                <input type="text" class="w-full px-4 py-3 bg-white border border-gray-300 rounded-md shadow-sm text-gray-900 font-medium" value="{{ sorteio.vaga.get_especial_display }}" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% elif sorteio_iniciado %}
+            <div class="text-center mt-5">
+                <p class="text-gray-500">Nenhum resultado disponível. O sorteio está em andamento.</p>
+            </div>
+            {% endif %}
+
+            {% if vagas_atribuidas %}
+            <div class="text-center mt-12">
+                <h5 class="text-lg font-light text-gray-600 mb-4">Sorteio finalizado {{ horario_conclusao }}.</h5>
+                <div class="flex gap-4 justify-center items-center flex-wrap">
+                    <a href="{% url 'tres_coelhos_excel' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Exportar para Excel
+                    </a>
+                    <a href="{% url 'tres_coelhos_dupla' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Continuar Sorteio de Duplas
+                    </a>
+                </div>
+            </div>
+                
+            <div class="text-center mt-12">
+                <img src="{% static 'assets/images/qrcode_coelhos.png' %}" alt="QR Code" class="mx-auto max-w-[200px]"/>
+                <p class="text-gray-500 font-light mt-4">Escaneie o QR Code para acessar seu resultado.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 
-<main>
-    <div class="p-4" id="container-sorteio">
-        <h5 class="mt-3 mb-3 font_subtitle text-dark text-center">Clique aqui para iniciar o sorteio</h5>
-        <div class="text-center">
-            <!-- Formulário para realizar o POST request -->
-            <form method="post" action="{% url 'tres_coelhos_sorteio' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-primary rounded-pill" id="botao-iniciar">Iniciar</button>
-            </form>
-        </div>
-
-        {% if vagas_atribuidas %}
-        <div class="loading-container" id="loadingContainer">                          
-            <div class="loading">
-                <img src="{% static '/assets/images/sorteio2.gif' %}" alt="Sorteando..." class="loading-gif mt-5">
-            </div>
-        </div>
-        {% endif %}
-
-        {% if resultados_sorteio %}
-        <div class="resultados mt-4">
-            <h2 class="text-center mb-4">Resultados do Sorteio</h2>
-            {% for sorteio in resultados_sorteio %}
-            <div class="row g-3 mt-3 linha-apartamento">
-                <div class="col-sm-3">
-                    <label class="form-label text-dark">Apartamento</label>
-                    <input type="text" class="form-control" value="{{ sorteio.apartamento.numero }}" readonly>
-                </div>
-                <div class="col-sm-3">
-                    <label class="form-label text-dark">Vaga</label>
-                    <input type="text" class="form-control" value="{{ sorteio.vaga.numero }}" readonly>
-                </div>
-                <div class="col-sm-2">
-                    <label class="form-label text-dark">Subsolo</label>
-                    <input type="text" class="form-control" value="{{ sorteio.vaga.subsolo }}" readonly>
-                </div>
-                <div class="col-sm-2">
-                    <label class="form-label text-dark">Tipo da Vaga</label>
-                    <input type="text" class="form-control" value="{{ sorteio.vaga.get_tipo_display }}" readonly>
-                </div>
-                <div class="col-sm-2">
-                    <label class="form-label text-dark">Especialidade</label>
-                    <input type="text" class="form-control" value="{{ sorteio.vaga.get_especial_display }}" readonly>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% elif sorteio_iniciado %}
-        <div class="text-center mt-5">
-            <p>Nenhum resultado disponível. O sorteio está em andamento.</p>
-        </div>
-        {% endif %}
-
-        {% if vagas_atribuidas %}
-            <div class="text-center text-dark mt-5 mb-5">
-                <h5>Sorteio finalizado {{ request.session.horario_conclusao }}.</h5>
-                <a href="{% url 'tres_coelhos_excel' %}" class="btn btn-info mt-3">Exportar para Excel</a> 
-            </div>
-            
-            <div class="text-center mt-5">
-                <img src="{% static '/assets/images/qrcode_coelhos.png' %}" alt="QR Code" style="max-width: 200px;"/>
-                <p class="text-dark">Escaneie o QR Code para acessar seu resultado.</p>
-            </div>
-            <div class="text-center mt-5 mb-5">
-                <a href="{% url 'tres_coelhos_dupla' %}" class="btn btn-info btn-lg">Clique para continuar o sorteio</a>
-            </div>
-        {% endif %}
-
-    </div>
-</main>
-
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const linhas = document.querySelectorAll('.linha-apartamento');
+    linhas.forEach((linha, index) => {
+        setTimeout(() => {
+            linha.style.opacity = '1';
+        }, index * 800);
+    });
+});
+</script>
 {% endblock %}
