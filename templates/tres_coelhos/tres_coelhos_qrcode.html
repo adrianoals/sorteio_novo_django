@@ -41,14 +41,21 @@
                             <p class="text-lg font-medium text-gray-900">
                                 Vaga: {{ sorteio.vaga.numero }} ({{ sorteio.vaga.get_tipo_display }}) - Subsolo {{ sorteio.vaga.subsolo }}
                             </p>
+                            
+                            {% comment %} Se for vaga dupla, mostrar informações sobre a dupla {% endcomment %}
                             {% if sorteio.vaga.dupla_com %}
                                 <p class="text-md text-gray-700">
-                                    Dupla com a vaga: {{ sorteio.vaga.dupla_com.numero }}
+                                    <span class="font-medium">Dupla com a vaga:</span> {{ sorteio.vaga.dupla_com.numero }}
                                 </p>
-                                {% with dupla_apartamento=sorteio.vaga.dupla_com.sorteiodupla_set.first.apartamento.numero %}
-                                    <p class="text-md text-gray-700">
-                                        Apartamento que faz dupla: {{ dupla_apartamento }}
-                                    </p>
+                                {% comment %} Buscar apartamento que está na vaga dupla correspondente em TODOS os sorteios {% endcomment %}
+                                {% with apartamento_dupla_encontrado=False %}
+                                    {% for outro_sorteio in todos_sorteios %}
+                                        {% if outro_sorteio.vaga.id == sorteio.vaga.dupla_com.id and outro_sorteio.apartamento.numero != apartamento_selecionado %}
+                                            <p class="text-md text-gray-700">
+                                                <span class="font-medium">Apartamento que faz dupla:</span> {{ outro_sorteio.apartamento.numero }}
+                                            </p>
+                                        {% endif %}
+                                    {% endfor %}
                                 {% endwith %}
                             {% endif %}
                         </div>

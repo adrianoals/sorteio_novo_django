@@ -198,27 +198,66 @@ def tres_coelhos_excel(request):
 
 
 def tres_coelhos_qrcode(request):
-    # Obter todos os apartamentos para preencher o dropdown
-    apartamentos_disponiveis = Apartamento.objects.all()
-    
     # Obter o apartamento selecionado através do filtro (via GET)
     numero_apartamento = request.GET.get('apartamento')
     
+    # Obter apartamentos que têm sorteio em AMBAS as tabelas (Sorteio e SorteioDupla)
+    apartamentos_com_sorteio = set()
+    
+    # Buscar apartamentos da tabela Sorteio (Fase 1 - vagas livres)
+    apartamentos_fase1 = Sorteio.objects.values_list('apartamento_id', flat=True).distinct()
+    apartamentos_com_sorteio.update(apartamentos_fase1)
+    
+    # Buscar apartamentos da tabela SorteioDupla (Fase 2 - vagas duplas)
+    apartamentos_fase2 = SorteioDupla.objects.values_list('apartamento_id', flat=True).distinct()
+    apartamentos_com_sorteio.update(apartamentos_fase2)
+    
+    # Obter objetos Apartamento que têm sorteio (ordenados por número)
+    apartamentos_disponiveis = Apartamento.objects.filter(
+        id__in=apartamentos_com_sorteio
+    ).order_by('numero')
+    
+    # Ordenar por número convertendo para int para ordenação numérica correta (1, 2, ..., 812)
+    apartamentos_disponiveis = sorted(
+        apartamentos_disponiveis,
+        key=lambda apt: int(apt.numero) if apt.numero.isdigit() else float('inf')
+    )
+    
+    # Buscar TODOS os sorteios de TODAS as tabelas para encontrar duplas
+    # Isso é necessário porque um apartamento pode fazer dupla com outro que não está nos resultados filtrados
+    todos_sorteios_fase1 = list(Sorteio.objects.select_related('apartamento', 'vaga').all())
+    todos_sorteios_fase2 = list(SorteioDupla.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').all())
+    todos_sorteios = todos_sorteios_fase1 + todos_sorteios_fase2
+
     # Inicializar a variável de resultados filtrados como uma lista vazia
     resultados_filtrados = []
 
     # Se o apartamento foi selecionado, realizar a filtragem dos resultados do sorteio
     if numero_apartamento:
-        # Buscar os sorteios para o apartamento selecionado
-        sorteios_duplas = SorteioDupla.objects.filter(apartamento__numero=numero_apartamento)
-
-        # Armazenar os resultados filtrados
-        resultados_filtrados = sorteios_duplas
+        # Buscar os sorteios da Fase 1 (Sorteio) para o apartamento selecionado
+        sorteios_fase1 = Sorteio.objects.filter(
+            apartamento__numero=numero_apartamento
+        ).select_related('apartamento', 'vaga').all()
+        
+        # Buscar os sorteios da Fase 2 (SorteioDupla) para o apartamento selecionado
+        sorteios_fase2 = SorteioDupla.objects.filter(
+            apartamento__numero=numero_apartamento
+        ).select_related('apartamento', 'vaga', 'vaga__dupla_com').all()
+        
+        # Combinar os resultados de ambas as tabelas
+        resultados_filtrados = list(sorteios_fase1) + list(sorteios_fase2)
+        
+        # Ordenar por tipo de sorteio (Fase 1 primeiro, depois Fase 2) e por número da vaga
+        resultados_filtrados.sort(key=lambda x: (
+            0 if isinstance(x, Sorteio) else 1,  # Sorteio vem primeiro
+            int(x.vaga.numero) if x.vaga.numero.isdigit() else float('inf')
+        ))
 
     return render(request, 'tres_coelhos/tres_coelhos_qrcode.html', {
         'resultados_filtrados': resultados_filtrados,
         'apartamento_selecionado': numero_apartamento,
         'apartamentos_disponiveis': apartamentos_disponiveis,
+        'todos_sorteios': todos_sorteios,  # Todos os sorteios para encontrar duplas
     })
 
 
@@ -334,7 +373,7 @@ def tres_coelhos_dupla(request):
                     vagas_usadas.add(vaga_par.id)
                     
                     print(f"Subsolo {subsolo}: Dupla sorteada - {dupla.apartamento_1.numero} → Vaga {vaga_encontrada.numero}, {dupla.apartamento_2.numero} → Vaga {vaga_par.numero}")
-                else:
+            else:
                     print(f"Subsolo {subsolo}: Dupla ({dupla.apartamento_1.numero}, {dupla.apartamento_2.numero}) sem par de vagas duplas disponível")
 
             # REGRA 4: Sorteio dos apartamentos restantes - Sem formar novas duplas (atribuição individual)
@@ -398,14 +437,20 @@ def tres_coelhos_dupla(request):
 
     else:
         sorteio_iniciado = request.session.get('sorteio_dupla_iniciado', False)
-        resultados_sorteio = SorteioDupla.objects.select_related('apartamento', 'vaga').order_by('apartamento__id').all()
+        resultados_sorteio = SorteioDupla.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').order_by('apartamento__id').all()
         vagas_atribuidas = resultados_sorteio.exists()
+
+        # Criar mapeamento de vaga_id -> apartamento_numero para facilitar busca no template
+        vaga_para_apartamento = {}
+        for sorteio in resultados_sorteio:
+            vaga_para_apartamento[sorteio.vaga.id] = sorteio.apartamento.numero
 
         return render(request, 'tres_coelhos/tres_coelhos_dupla.html', {
             'resultados_sorteio': resultados_sorteio,
             'vagas_atribuidas': vagas_atribuidas,
             'sorteio_iniciado': sorteio_iniciado,
-            'horario_conclusao': request.session.get('horario_conclusao_dupla', '')
+            'horario_conclusao': request.session.get('horario_conclusao_dupla', ''),
+            'vaga_para_apartamento': vaga_para_apartamento
         })
 
 
