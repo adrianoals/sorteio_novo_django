@@ -93,9 +93,10 @@ def tres_coelhos_sorteio(request):
                 pne_remanescentes_subsolo = pne_subsolo
                 print(f"Subsolo {subsolo}: {len(pne_remanescentes_subsolo)} PNE sem vaga PNE fixa - todos devem receber vaga livre normal")
             elif vaga_pne_fixa:
-                # Há vaga PNE fixa mas não há PNE - vaga PNE não é atribuída (fica disponível?)
-                # Na verdade, se não há PNE, a vaga PNE não deve ser atribuída a ninguém na Fase 1
-                print(f"Subsolo {subsolo}: Vaga PNE fixa disponível mas sem PNE - vaga não será atribuída na Fase 1")
+                # Há vaga PNE fixa mas não há PNE - vaga PNE é liberada para qualquer apartamento do subsolo
+                print(f"Subsolo {subsolo}: Vaga PNE fixa disponível mas sem PNE - vaga será liberada para sorteio geral")
+                # Adicionar vaga PNE ao pool de vagas livres do subsolo
+                vagas_normais_subsolo.append(vaga_pne_fixa)
 
             # ETAPA 1b: PNE remanescentes recebem vagas livres (PRIORIDADE - antes dos demais)
             if pne_remanescentes_subsolo and vagas_normais_subsolo:
@@ -331,10 +332,6 @@ def tres_coelhos_dupla(request):
             print(f"Subsolo {subsolo}: {len(vagas_duplas_subsolo)} vagas duplas disponíveis")
             print(f"Subsolo {subsolo}: Apartamentos IDs: {[apt.numero for apt in apartamentos_subsolo]}")
 
-            # REGRA 3: Sorteio das duplas pré-configuradas (primeiro)
-            random.shuffle(duplas_subsolo)
-            random.shuffle(vagas_duplas_subsolo)
-            
             # Criar lista de IDs de apartamentos já sorteados nesta etapa
             apartamentos_sorteados_dupla = set()
             
@@ -342,40 +339,48 @@ def tres_coelhos_dupla(request):
             vagas_disponiveis_set = set(vagas_duplas_subsolo)
             vagas_usadas = set()
             
-            for dupla in duplas_subsolo:
-                # Encontrar par de vagas duplas disponíveis
-                vaga_encontrada = None
-                vaga_par = None
+            # REGRA 3: Sorteio das duplas pré-configuradas (primeiro)
+            if duplas_subsolo:
+                random.shuffle(duplas_subsolo)
+                random.shuffle(vagas_duplas_subsolo)
+                print(f"Subsolo {subsolo}: Processando {len(duplas_subsolo)} dupla(s) pré-configurada(s)")
                 
-                # Buscar par de vagas duplas (uma deve ter dupla_com apontando para a outra)
-                for vaga in vagas_duplas_subsolo:
-                    if vaga.id in vagas_usadas:
-                        continue
+                for dupla in duplas_subsolo:
+                    # Encontrar par de vagas duplas disponíveis
+                    vaga_encontrada = None
+                    vaga_par = None
                     
-                    if vaga.dupla_com and vaga.dupla_com.id in [v.id for v in vagas_duplas_subsolo if v.id not in vagas_usadas]:
-                        vaga_encontrada = vaga
-                        vaga_par = vaga.dupla_com
-                        break
-                
-                if vaga_encontrada and vaga_par:
-                    # Criar sorteios da dupla
-                    sorteios_dupla_para_criar.append(
-                        SorteioDupla(apartamento=dupla.apartamento_1, vaga=vaga_encontrada)
-                    )
-                    sorteios_dupla_para_criar.append(
-                        SorteioDupla(apartamento=dupla.apartamento_2, vaga=vaga_par)
-                    )
+                    # Buscar par de vagas duplas (uma deve ter dupla_com apontando para a outra)
+                    for vaga in vagas_duplas_subsolo:
+                        if vaga.id in vagas_usadas:
+                            continue
+                        
+                        if vaga.dupla_com and vaga.dupla_com.id in [v.id for v in vagas_duplas_subsolo if v.id not in vagas_usadas]:
+                            vaga_encontrada = vaga
+                            vaga_par = vaga.dupla_com
+                            break
                     
-                    apartamentos_sorteados_dupla.add(dupla.apartamento_1.id)
-                    apartamentos_sorteados_dupla.add(dupla.apartamento_2.id)
-                    
-                    # Marcar vagas como usadas (evita usar remove())
-                    vagas_usadas.add(vaga_encontrada.id)
-                    vagas_usadas.add(vaga_par.id)
-                    
-                    print(f"Subsolo {subsolo}: Dupla sorteada - {dupla.apartamento_1.numero} → Vaga {vaga_encontrada.numero}, {dupla.apartamento_2.numero} → Vaga {vaga_par.numero}")
+                    if vaga_encontrada and vaga_par:
+                        # Criar sorteios da dupla
+                        sorteios_dupla_para_criar.append(
+                            SorteioDupla(apartamento=dupla.apartamento_1, vaga=vaga_encontrada)
+                        )
+                        sorteios_dupla_para_criar.append(
+                            SorteioDupla(apartamento=dupla.apartamento_2, vaga=vaga_par)
+                        )
+                        
+                        apartamentos_sorteados_dupla.add(dupla.apartamento_1.id)
+                        apartamentos_sorteados_dupla.add(dupla.apartamento_2.id)
+                        
+                        # Marcar vagas como usadas (evita usar remove())
+                        vagas_usadas.add(vaga_encontrada.id)
+                        vagas_usadas.add(vaga_par.id)
+                        
+                        print(f"Subsolo {subsolo}: Dupla sorteada - {dupla.apartamento_1.numero} → Vaga {vaga_encontrada.numero}, {dupla.apartamento_2.numero} → Vaga {vaga_par.numero}")
+                    else:
+                        print(f"Subsolo {subsolo}: Dupla ({dupla.apartamento_1.numero}, {dupla.apartamento_2.numero}) sem par de vagas duplas disponível")
             else:
-                    print(f"Subsolo {subsolo}: Dupla ({dupla.apartamento_1.numero}, {dupla.apartamento_2.numero}) sem par de vagas duplas disponível")
+                print(f"Subsolo {subsolo}: Nenhuma dupla pré-configurada - todos os apartamentos serão atribuídos individualmente")
 
             # REGRA 4: Sorteio dos apartamentos restantes - Sem formar novas duplas (atribuição individual)
             apartamentos_restantes_subsolo = [apt for apt in apartamentos_subsolo if apt.id not in apartamentos_sorteados_dupla]
@@ -411,6 +416,8 @@ def tres_coelhos_dupla(request):
                 else:
                     print(f"Subsolo {subsolo}: Apartamento {apartamento.numero} sem vaga dupla disponível neste subsolo")
                     break  # Não há mais vagas disponíveis, parar o loop
+            else:
+                print(f"Subsolo {subsolo}: Nenhum apartamento restante para atribuir (todos já foram sorteados nas duplas pré-configuradas)")
 
         # Criar todos os sorteios de uma vez (MUITO MAIS RÁPIDO)
         if sorteios_dupla_para_criar:
@@ -625,8 +632,9 @@ def tres_coelhos_configurar_duplas(request):
             
             # Debug: mostrar todos os valores
             for key in sorted(duplas_keys):
-                value = request.POST.get(key)
-                print(f"DEBUG: {key} = '{value}' (vazio: {not value or value.strip() == ''})")
+                value = request.POST.get(key, '')
+                value_str = str(value).strip() if value else ''
+                print(f"DEBUG: {key} = '{value_str}' (vazio: {not value_str})")
             
             # Agrupar por índice de dupla
             duplas_dict = {}
@@ -636,22 +644,27 @@ def tres_coelhos_configurar_duplas(request):
                 parts = key.split('_')
                 if len(parts) == 3 and parts[0] == 'dupla' and parts[2] in ['apt1', 'apt2']:
                     index = parts[1]  # O índice está na posição 1
-                    if index not in duplas_dict:
-                        duplas_dict[index] = {}
-                    duplas_dict[index][parts[2]] = request.POST.get(key)
+                    value = request.POST.get(key, '').strip()
+                    if value:  # Só adiciona se houver valor
+                        if index not in duplas_dict:
+                            duplas_dict[index] = {}
+                        duplas_dict[index][parts[2]] = value
             
             print(f"DEBUG: Duplas agrupadas: {duplas_dict}")
             
             # Processar duplas coletadas
             for index, dupla in duplas_dict.items():
-                apt1_id = dupla.get('apt1', '')
-                apt2_id = dupla.get('apt2', '')
+                apt1_id = str(dupla.get('apt1', '')).strip()
+                apt2_id = str(dupla.get('apt2', '')).strip()
                 
                 print(f"DEBUG: Processando dupla {index}: apt1={apt1_id}, apt2={apt2_id}")
                 
-                if apt1_id and apt1_id.isdigit():
-                    if apt2_id and apt2_id.isdigit():
-                        duplas_data.append((int(apt1_id), int(apt2_id)))
+                # Validar que ambos os IDs existem e são numéricos
+                if apt1_id and apt1_id.isdigit() and apt2_id and apt2_id.isdigit():
+                    duplas_data.append((int(apt1_id), int(apt2_id)))
+                    print(f"DEBUG: ✅ Dupla {index} válida: apt1={apt1_id}, apt2={apt2_id}")
+                else:
+                    print(f"DEBUG: ❌ Dupla {index} inválida - apt1={apt1_id}, apt2={apt2_id}")
             
             print(f"DEBUG: Duplas válidas encontradas: {len(duplas_data)}")
             
@@ -707,18 +720,35 @@ def tres_coelhos_configurar_duplas(request):
             
             if duplas_para_criar:
                 try:
-                    # Criar as duplas uma por uma para debug melhor
+                    # Criar as duplas uma por uma para debug melhor e validação
                     duplas_criadas_com_sucesso = 0
+                    duplas_erros = []
+                    
                     for dupla_obj in duplas_para_criar:
                         print(f"DEBUG: Criando dupla: {dupla_obj.apartamento_1.numero} ↔ {dupla_obj.apartamento_2.numero}")
+                        print(f"DEBUG:   - Apt1 ID: {dupla_obj.apartamento_1.id}, Subsolo: {dupla_obj.apartamento_1.subsolo}")
+                        print(f"DEBUG:   - Apt2 ID: {dupla_obj.apartamento_2.id}, Subsolo: {dupla_obj.apartamento_2.subsolo}")
+                        
                         try:
-                            dupla_obj.save()
-                            duplas_criadas_com_sucesso += 1
-                            print(f"DEBUG: ✅ Dupla criada com sucesso! ID: {dupla_obj.id}")
+                            # Verificar se a dupla já existe (evitar duplicatas)
+                            dupla_existe = DuplaApartamentos.objects.filter(
+                                apartamento_1=dupla_obj.apartamento_1,
+                                apartamento_2=dupla_obj.apartamento_2
+                            ).exists()
+                            
+                            if not dupla_existe:
+                                dupla_obj.save()
+                                duplas_criadas_com_sucesso += 1
+                                print(f"DEBUG: ✅ Dupla criada com sucesso! ID: {dupla_obj.id}")
+                            else:
+                                print(f"DEBUG: ⚠️ Dupla já existe no banco - ignorando")
+                                duplas_erros.append(f"Dupla {dupla_obj.apartamento_1.numero} ↔ {dupla_obj.apartamento_2.numero} já existe")
                         except Exception as save_error:
-                            print(f"DEBUG: ❌ Erro ao criar dupla individual: {str(save_error)}")
+                            error_msg = str(save_error)
+                            print(f"DEBUG: ❌ Erro ao criar dupla individual: {error_msg}")
                             import traceback
                             traceback.print_exc()
+                            duplas_erros.append(f"Erro ao criar {dupla_obj.apartamento_1.numero} ↔ {dupla_obj.apartamento_2.numero}: {error_msg}")
                     
                     # Verificar se realmente foram criadas
                     total_depois = DuplaApartamentos.objects.count()
@@ -729,6 +759,8 @@ def tres_coelhos_configurar_duplas(request):
                         messages.success(request, f'{duplas_criadas_com_sucesso} dupla(s) criada(s) com sucesso!')
                     if duplas_rejeitadas:
                         messages.warning(request, f'{len(duplas_rejeitadas)} dupla(s) foram rejeitada(s) (apartamentos já em duplas ou critérios não atendidos).')
+                    if duplas_erros:
+                        messages.warning(request, f'{len(duplas_erros)} dupla(s) não puderam ser criadas. Detalhes nos logs.')
                 except Exception as db_error:
                     print(f"DEBUG: ❌ ERRO ao criar duplas no banco: {str(db_error)}")
                     import traceback
