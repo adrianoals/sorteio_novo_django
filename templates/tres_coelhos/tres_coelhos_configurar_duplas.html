@@ -1,0 +1,342 @@
+{% extends 'sorteio_novo/base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-4 text-center">Configurar Duplas de Apartamentos</h1>
+            <p class="text-center text-gray-600 mb-8">Defina quais apartamentos formam duplas, organizados por subsolo</p>
+            
+            {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                    <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4">
+                        {{ message }}
+                    </div>
+                    {% elif message.tags == 'error' %}
+                    <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4">
+                        {{ message }}
+                    </div>
+                    {% else %}
+                    <div class="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg mb-4">
+                        {{ message }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <form method="post" action="{% url 'tres_coelhos_configurar_duplas' %}" id="formDuplas">
+                {% csrf_token %}
+                
+                {% if apartamentos_subsolo_1 %}
+                <div class="mb-12">
+                    <h2 class="text-2xl font-light text-gray-800 mb-6 pb-2 border-b-2 border-[#5E17EB]">Subsolo 1</h2>
+                    
+                    <!-- Duplas existentes do Subsolo 1 -->
+                    {% if duplas_subsolo_1 %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-700 mb-4">Duplas Existentes</h3>
+                        <div class="space-y-2 mb-4">
+                            {% for dupla in duplas_subsolo_1 %}
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_1.numero }}</span>
+                                    <span class="text-gray-500">↔</span>
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_2.numero }}</span>
+                                </div>
+                                <button type="button" 
+                                        onclick="excluirDupla({{ dupla.id }}, '{{ dupla.apartamento_1.numero }}', '{{ dupla.apartamento_2.numero }}')"
+                                        class="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded transition">
+                                    ✕ Excluir
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Formulário para criar novas duplas -->
+                    <div class="space-y-4" id="duplas_subsolo_1">
+                        <div class="dupla-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 1</label>
+                                <select name="dupla_1_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                    <option value="">Selecione...</option>
+                                    {% for apt in apartamentos_subsolo_1 %}
+                                    <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <span class="text-gray-500 text-xl mt-6">↔</span>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 2</label>
+                                <select name="dupla_1_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                    <option value="">Selecione...</option>
+                                    {% for apt in apartamentos_subsolo_1 %}
+                                    <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="adicionarDupla(1)" class="mt-4 text-[#5E17EB] hover:text-[#4912b8] font-light">
+                        + Adicionar outra dupla (Subsolo 1)
+                    </button>
+                </div>
+                {% endif %}
+                
+                {% if apartamentos_subsolo_2 %}
+                <div class="mb-12">
+                    <h2 class="text-2xl font-light text-gray-800 mb-6 pb-2 border-b-2 border-[#5E17EB]">Subsolo 2</h2>
+                    
+                    <!-- Duplas existentes do Subsolo 2 -->
+                    {% if duplas_subsolo_2 %}
+                    <div class="mb-6">
+                        <h3 class="text-lg font-medium text-gray-700 mb-4">Duplas Existentes</h3>
+                        <div class="space-y-2 mb-4">
+                            {% for dupla in duplas_subsolo_2 %}
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_1.numero }}</span>
+                                    <span class="text-gray-500">↔</span>
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_2.numero }}</span>
+                                </div>
+                                <button type="button" 
+                                        onclick="excluirDupla({{ dupla.id }}, '{{ dupla.apartamento_1.numero }}', '{{ dupla.apartamento_2.numero }}')"
+                                        class="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded transition">
+                                    ✕ Excluir
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Formulário para criar novas duplas -->
+                    <div class="space-y-4" id="duplas_subsolo_2">
+                        <div class="dupla-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 1</label>
+                                <select name="dupla_2_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                    <option value="">Selecione...</option>
+                                    {% for apt in apartamentos_subsolo_2 %}
+                                    <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <span class="text-gray-500 text-xl mt-6">↔</span>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 2</label>
+                                <select name="dupla_2_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                    <option value="">Selecione...</option>
+                                    {% for apt in apartamentos_subsolo_2 %}
+                                    <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="adicionarDupla(2)" class="mt-4 text-[#5E17EB] hover:text-[#4912b8] font-light">
+                        + Adicionar outra dupla (Subsolo 2)
+                    </button>
+                </div>
+                {% endif %}
+                
+                <div class="text-center mt-8">
+                    <button type="submit" id="btnSalvar" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Salvar Configuração de Duplas
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-8 text-center">
+                <a href="{% url 'tres_coelhos_sorteio' %}" class="text-[#5E17EB] hover:text-[#4912b8] font-light">
+                    ← Voltar para Sorteio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let contadorDuplas = {
+    1: 2,  // Contador para subsolo 1 (começa em 2 porque já tem uma)
+    2: 3   // Contador para subsolo 2 (começa em 3 porque já tem uma)
+};
+
+function adicionarDupla(subsolo) {
+    const container = document.getElementById(`duplas_subsolo_${subsolo}`);
+    const index = contadorDuplas[subsolo];
+    contadorDuplas[subsolo]++;
+    
+    const novoItem = document.createElement('div');
+    novoItem.className = 'dupla-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg mt-4 bg-gray-50';
+    
+    // Buscar o primeiro select do subsolo para pegar as opções de apartamentos
+    const primeiroSelect = container.querySelector('select[name^="dupla_"][name$="_apt1"]');
+    const optionsHtml = Array.from(primeiroSelect.options)
+        .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
+        .join('');
+    
+    novoItem.innerHTML = `
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 1</label>
+            <select name="dupla_${index}_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                <option value="">Selecione...</option>
+                ${optionsHtml}
+            </select>
+        </div>
+        <span class="text-gray-500 text-xl mt-6">↔</span>
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 2</label>
+            <select name="dupla_${index}_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                <option value="">Selecione...</option>
+                ${optionsHtml}
+            </select>
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" class="text-red-600 hover:text-red-800 ml-2 px-2">
+            ✕
+        </button>
+    `;
+    
+    container.appendChild(novoItem);
+}
+
+// Função para excluir dupla via JavaScript (requisição GET separada)
+function excluirDupla(duplaId, apt1Num, apt2Num) {
+    if (confirm('Deseja realmente excluir a dupla Apartamento ' + apt1Num + ' ↔ Apartamento ' + apt2Num + '?')) {
+        console.log('Excluindo dupla ID: ' + duplaId);
+        // Fazer requisição GET para excluir
+        const url = new URL(window.location.href);
+        url.searchParams.set('excluir_dupla', duplaId);
+        window.location.href = url.toString();
+    }
+}
+
+// Adicionar estilo CSS para garantir visibilidade do texto selecionado
+const style = document.createElement('style');
+style.textContent = `
+    select.select-dupla {
+        color: #111827 !important;
+    }
+    select.select-dupla option {
+        color: #111827 !important;
+        background-color: white !important;
+    }
+    select.select-dupla:focus {
+        color: #111827 !important;
+    }
+`;
+document.head.appendChild(style);
+
+// Mostrar preview da dupla quando selecionar
+document.addEventListener('DOMContentLoaded', function() {
+    const selects = document.querySelectorAll('.select-dupla');
+    selects.forEach(select => {
+        // Garantir que o texto seja visível
+        select.style.color = '#111827';
+        
+        select.addEventListener('change', function() {
+            // Garantir cor visível
+            this.style.color = '#111827';
+            
+            // Destacar visualmente quando selecionado
+            if (this.value) {
+                this.classList.add('border-[#5E17EB]', 'bg-[#5E17EB]/5');
+                console.log(`✅ Selecionado: ${this.name} = ${this.options[this.selectedIndex].text}`);
+            } else {
+                this.classList.remove('border-[#5E17EB]', 'bg-[#5E17EB]/5');
+            }
+        });
+    });
+    
+    // Log dos dados do formulário antes de enviar - ADICIONAR AQUI DENTRO DO DOMContentLoaded
+    const formDuplas = document.getElementById('formDuplas');
+    if (formDuplas) {
+        formDuplas.addEventListener('submit', function(e) {
+            console.log('=== SUBMIT DO FORMULÁRIO INICIADO ===');
+            
+            // PRIMEIRO: Verificar diretamente os selects antes de criar FormData
+            const allSelects = document.querySelectorAll('select[name^="dupla_"]');
+            console.log(`Total de selects encontrados: ${allSelects.length}`);
+            
+            const duplas = {};
+            
+            // Verificar diretamente os valores dos selects
+            allSelects.forEach(select => {
+                const name = select.name;
+                const value = select.value;
+                console.log(`Select direto: ${name} = "${value}" (tipo: ${typeof value})`);
+                
+                if (value && value.trim() !== '') {
+                    const parts = name.split('_');
+                    if (parts.length === 3 && parts[0] === 'dupla' && parts[2] in ['apt1', 'apt2']) {
+                        const index = parts[1];
+                        const campo = parts[2];
+                        if (!duplas[index]) {
+                            duplas[index] = {};
+                        }
+                        duplas[index][campo] = value;
+                        console.log(`  -> Adicionado: duplas[${index}][${campo}] = ${value}`);
+                    }
+                }
+            });
+            
+            // AGORA verificar o FormData também
+            const formData = new FormData(this);
+            console.log('\n=== DADOS DO FORMDATA ===');
+            const formDataEntries = [];
+            for (let [key, value] of formData.entries()) {
+                formDataEntries.push([key, value]);
+                console.log(`FormData: ${key} = "${value}"`);
+            }
+            console.log(`Total de campos no FormData: ${formDataEntries.length}`);
+            
+            // Verificar duplas completas
+            let duplasValidas = 0;
+            const duplasCompletas = {};
+            
+            for (let index in duplas) {
+                if (duplas[index].apt1 && duplas[index].apt2) {
+                    duplasValidas++;
+                    duplasCompletas[index] = duplas[index];
+                    console.log(`✅ Dupla completa: ${index} - apt1: ${duplas[index].apt1}, apt2: ${duplas[index].apt2}`);
+                } else {
+                    console.log(`⚠️ Dupla incompleta: ${index} - apt1: ${duplas[index].apt1 || 'vazio'}, apt2: ${duplas[index].apt2 || 'vazio'}`);
+                }
+            }
+            
+            console.log(`\n=== RESUMO ===`);
+            console.log(`Total de duplas encontradas: ${Object.keys(duplas).length}`);
+            console.log(`Duplas completas: ${duplasValidas}`);
+            console.log(`Duplas completas detalhadas:`, duplasCompletas);
+            
+            if (duplasValidas === 0) {
+                console.warn('⚠️ Nenhuma dupla completa selecionada!');
+                alert('Por favor, selecione pelo menos uma dupla completa (ambos os apartamentos) antes de salvar.');
+                e.preventDefault();
+                return false;
+            }
+            
+            // Mostrar feedback visual no botão
+            const btnSalvar = document.getElementById('btnSalvar');
+            if (btnSalvar) {
+                btnSalvar.disabled = true;
+                const originalText = btnSalvar.textContent;
+                btnSalvar.textContent = 'Salvando...';
+            }
+            
+            console.log('✅ Formulário será enviado com ' + duplasValidas + ' dupla(s)...');
+            // NÃO prevenir o submit - deixar enviar normalmente
+        });
+    } else {
+        console.error('❌ Formulário formDuplas não encontrado!');
+    }
+});
+</script>
+{% endblock %}
+
+

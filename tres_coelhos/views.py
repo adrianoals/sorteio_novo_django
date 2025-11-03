@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.contrib import messages
 import random
 from django.http import HttpResponse
 # from openpyxl import Workbook  # Para gerar o Excel
@@ -228,7 +229,7 @@ def tres_coelhos_qrcode(request):
     todos_sorteios_fase1 = list(Sorteio.objects.select_related('apartamento', 'vaga').all())
     todos_sorteios_fase2 = list(SorteioDupla.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').all())
     todos_sorteios = todos_sorteios_fase1 + todos_sorteios_fase2
-
+    
     # Inicializar a variável de resultados filtrados como uma lista vazia
     resultados_filtrados = []
 
@@ -539,3 +540,255 @@ def tres_coelhos_resultado(request):
     }
 
     return render(request, 'tres_coelhos/tres_coelhos_resultado.html', context)
+
+
+def tres_coelhos_configurar_pne(request):
+    """View para configurar quais apartamentos são PNE"""
+    if request.method == 'POST':
+        # Obter IDs dos apartamentos marcados como PNE
+        apartamentos_pne_ids = request.POST.getlist('apartamentos_pne')
+        
+        # Converter para inteiros
+        apartamentos_pne_ids = [int(id) for id in apartamentos_pne_ids if id.isdigit()]
+        
+        # Atualizar todos os apartamentos
+        # Primeiro, desmarcar todos como PNE
+        Apartamento.objects.all().update(is_pne=False)
+        
+        # Depois, marcar apenas os selecionados
+        if apartamentos_pne_ids:
+            Apartamento.objects.filter(id__in=apartamentos_pne_ids).update(is_pne=True)
+        
+        return redirect('tres_coelhos_configurar_pne')
+    
+    # Obter todos os apartamentos ordenados por número
+    apartamentos = Apartamento.objects.all().order_by('numero')
+    
+    # Separar por subsolo
+    apartamentos_subsolo_1 = [apt for apt in apartamentos if apt.subsolo == 1]
+    apartamentos_subsolo_2 = [apt for apt in apartamentos if apt.subsolo == 2]
+    apartamentos_sem_subsolo = [apt for apt in apartamentos if apt.subsolo is None]
+    
+    # Ordenar numericamente
+    def ordenar_por_numero(apt):
+        try:
+            return int(apt.numero)
+        except ValueError:
+            return float('inf')
+    
+    apartamentos_subsolo_1 = sorted(apartamentos_subsolo_1, key=ordenar_por_numero)
+    apartamentos_subsolo_2 = sorted(apartamentos_subsolo_2, key=ordenar_por_numero)
+    apartamentos_sem_subsolo = sorted(apartamentos_sem_subsolo, key=ordenar_por_numero)
+    
+    return render(request, 'tres_coelhos/tres_coelhos_configurar_pne.html', {
+        'apartamentos_subsolo_1': apartamentos_subsolo_1,
+        'apartamentos_subsolo_2': apartamentos_subsolo_2,
+        'apartamentos_sem_subsolo': apartamentos_sem_subsolo,
+    })
+
+
+def tres_coelhos_configurar_duplas(request):
+    """View para configurar duplas de apartamentos por subsolo"""
+    # Processar exclusão de dupla (via GET ou POST)
+    dupla_id_excluir = request.GET.get('excluir_dupla') or request.POST.get('excluir_dupla')
+    if dupla_id_excluir and dupla_id_excluir.isdigit():
+        try:
+            dupla = DuplaApartamentos.objects.get(id=int(dupla_id_excluir))
+            dupla.delete()
+            return redirect('tres_coelhos_configurar_duplas')
+        except DuplaApartamentos.DoesNotExist:
+            pass
+    
+    if request.method == 'POST':
+        print("=" * 50)
+        print("DEBUG: POST recebido!")
+        print(f"DEBUG: Todos os campos POST: {list(request.POST.keys())}")
+        print(f"DEBUG: Total de campos POST: {len(request.POST)}")
+        print(f"DEBUG: csrfmiddlewaretoken presente: {'csrfmiddlewaretoken' in request.POST}")
+        
+        # Log detalhado de TODOS os valores POST
+        print("\n=== TODOS OS VALORES POST ===")
+        for key in request.POST.keys():
+            value = request.POST.get(key)
+            print(f"  {key} = '{value}' (tipo: {type(value).__name__})")
+        print("=" * 50)
+        
+        try:
+            # Obter dados do formulário
+            duplas_data = []
+            
+            # Processar todas as chaves do POST que começam com 'dupla_'
+            duplas_keys = {k for k in request.POST.keys() if k.startswith('dupla_')}
+            
+            print(f"\nDEBUG: Chaves encontradas (com 'dupla_'): {duplas_keys}")
+            print(f"DEBUG: Total de chaves 'dupla_': {len(duplas_keys)}")
+            
+            # Debug: mostrar todos os valores
+            for key in sorted(duplas_keys):
+                value = request.POST.get(key)
+                print(f"DEBUG: {key} = '{value}' (vazio: {not value or value.strip() == ''})")
+            
+            # Agrupar por índice de dupla
+            duplas_dict = {}
+            for key in duplas_keys:
+                # Formato: dupla_X_apt1 ou dupla_X_apt2
+                # Exemplo: dupla_1_apt1 -> ['dupla', '1', 'apt1']
+                parts = key.split('_')
+                if len(parts) == 3 and parts[0] == 'dupla' and parts[2] in ['apt1', 'apt2']:
+                    index = parts[1]  # O índice está na posição 1
+                    if index not in duplas_dict:
+                        duplas_dict[index] = {}
+                    duplas_dict[index][parts[2]] = request.POST.get(key)
+            
+            print(f"DEBUG: Duplas agrupadas: {duplas_dict}")
+            
+            # Processar duplas coletadas
+            for index, dupla in duplas_dict.items():
+                apt1_id = dupla.get('apt1', '')
+                apt2_id = dupla.get('apt2', '')
+                
+                print(f"DEBUG: Processando dupla {index}: apt1={apt1_id}, apt2={apt2_id}")
+                
+                if apt1_id and apt1_id.isdigit():
+                    if apt2_id and apt2_id.isdigit():
+                        duplas_data.append((int(apt1_id), int(apt2_id)))
+            
+            print(f"DEBUG: Duplas válidas encontradas: {len(duplas_data)}")
+            
+            if not duplas_data:
+                messages.warning(request, 'Nenhuma dupla foi selecionada. Por favor, selecione pelo menos um apartamento em cada campo para formar uma dupla.')
+                return redirect('tres_coelhos_configurar_duplas')
+            
+            # NÃO limpar duplas existentes - apenas adicionar novas
+            # As duplas existentes são preservadas
+            
+            # Criar novas duplas (apenas se não existirem)
+            duplas_para_criar = []
+            apartamentos_em_duplas = set()
+            
+            # Coletar apartamentos que já estão em duplas
+            duplas_existentes = DuplaApartamentos.objects.all()
+            for dupla in duplas_existentes:
+                apartamentos_em_duplas.add(dupla.apartamento_1.id)
+                if dupla.apartamento_2:
+                    apartamentos_em_duplas.add(dupla.apartamento_2.id)
+            
+            duplas_rejeitadas = []
+            for apt1_id, apt2_id in duplas_data:
+                # Verificar se algum dos apartamentos já está em uma dupla
+                if apt1_id in apartamentos_em_duplas or apt2_id in apartamentos_em_duplas:
+                    print(f"DEBUG: Pulando dupla - apartamento já está em dupla: {apt1_id}, {apt2_id}")
+                    duplas_rejeitadas.append((apt1_id, apt2_id, "apartamento já está em dupla"))
+                    continue
+                    
+                try:
+                    apt1 = Apartamento.objects.get(id=apt1_id)
+                    apt2 = Apartamento.objects.get(id=apt2_id)
+                    
+                    if apt1.id != apt2.id:
+                        # Verificar se ambos têm o mesmo subsolo
+                        if apt1.subsolo and apt2.subsolo and apt1.subsolo == apt2.subsolo:
+                            duplas_para_criar.append(
+                                DuplaApartamentos(apartamento_1=apt1, apartamento_2=apt2)
+                            )
+                            print(f"DEBUG: Dupla adicionada: {apt1.numero} ↔ {apt2.numero}")
+                        else:
+                            print(f"DEBUG: Dupla rejeitada - subsolos diferentes: {apt1.subsolo} vs {apt2.subsolo}")
+                            duplas_rejeitadas.append((apt1_id, apt2_id, "subsolos diferentes"))
+                    else:
+                        print(f"DEBUG: Dupla rejeitada - mesmo apartamento: {apt1_id}")
+                        duplas_rejeitadas.append((apt1_id, apt2_id, "mesmo apartamento"))
+                except Apartamento.DoesNotExist as e:
+                    print(f"DEBUG: Apartamento não encontrado: {apt1_id} ou {apt2_id}")
+                    messages.error(request, f'Erro ao processar dupla: apartamento não encontrado.')
+                    continue
+            
+            print(f"DEBUG: Total de duplas para criar: {len(duplas_para_criar)}")
+            
+            if duplas_para_criar:
+                try:
+                    # Criar as duplas uma por uma para debug melhor
+                    duplas_criadas_com_sucesso = 0
+                    for dupla_obj in duplas_para_criar:
+                        print(f"DEBUG: Criando dupla: {dupla_obj.apartamento_1.numero} ↔ {dupla_obj.apartamento_2.numero}")
+                        try:
+                            dupla_obj.save()
+                            duplas_criadas_com_sucesso += 1
+                            print(f"DEBUG: ✅ Dupla criada com sucesso! ID: {dupla_obj.id}")
+                        except Exception as save_error:
+                            print(f"DEBUG: ❌ Erro ao criar dupla individual: {str(save_error)}")
+                            import traceback
+                            traceback.print_exc()
+                    
+                    # Verificar se realmente foram criadas
+                    total_depois = DuplaApartamentos.objects.count()
+                    print(f"DEBUG: Total de duplas no banco após criar: {total_depois}")
+                    print(f"DEBUG: Duplas criadas com sucesso: {duplas_criadas_com_sucesso}")
+                    
+                    if duplas_criadas_com_sucesso > 0:
+                        messages.success(request, f'{duplas_criadas_com_sucesso} dupla(s) criada(s) com sucesso!')
+                    if duplas_rejeitadas:
+                        messages.warning(request, f'{len(duplas_rejeitadas)} dupla(s) foram rejeitada(s) (apartamentos já em duplas ou critérios não atendidos).')
+                except Exception as db_error:
+                    print(f"DEBUG: ❌ ERRO ao criar duplas no banco: {str(db_error)}")
+                    import traceback
+                    traceback.print_exc()
+                    messages.error(request, f'Erro ao salvar no banco: {str(db_error)}')
+            else:
+                print(f"DEBUG: ⚠️ Nenhuma dupla para criar!")
+                print(f"DEBUG: Duplas rejeitadas: {len(duplas_rejeitadas)}")
+                for rej in duplas_rejeitadas:
+                    print(f"DEBUG:   - {rej}")
+                messages.warning(request, 'Nenhuma nova dupla foi criada. Verifique se os apartamentos selecionados estão corretos e não estão já em duplas.')
+            
+            print("=" * 50)
+            
+            return redirect('tres_coelhos_configurar_duplas')
+            
+        except Exception as e:
+            print(f"ERRO ao processar formulário: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f'Erro ao processar formulário: {str(e)}')
+            return redirect('tres_coelhos_configurar_duplas')
+    
+    # Obter duplas existentes organizadas por subsolo (ANTES de filtrar apartamentos)
+    duplas_existentes = DuplaApartamentos.objects.select_related(
+        'apartamento_1', 'apartamento_2'
+    ).all()
+    
+    duplas_subsolo_1 = [d for d in duplas_existentes if d.apartamento_1.subsolo == 1]
+    duplas_subsolo_2 = [d for d in duplas_existentes if d.apartamento_1.subsolo == 2]
+    
+    # Obter IDs dos apartamentos que já estão em duplas (para excluir dos dropdowns)
+    apartamentos_em_duplas_ids = set()
+    for dupla in duplas_existentes:
+        apartamentos_em_duplas_ids.add(dupla.apartamento_1.id)
+        if dupla.apartamento_2:
+            apartamentos_em_duplas_ids.add(dupla.apartamento_2.id)
+    
+    # Obter todos os apartamentos ordenados por número e subsolo, EXCLUINDO os que já estão em duplas
+    apartamentos_subsolo_1 = Apartamento.objects.filter(
+        subsolo=1
+    ).exclude(id__in=apartamentos_em_duplas_ids).order_by('numero')
+    
+    apartamentos_subsolo_2 = Apartamento.objects.filter(
+        subsolo=2
+    ).exclude(id__in=apartamentos_em_duplas_ids).order_by('numero')
+    
+    # Ordenar numericamente
+    def ordenar_por_numero(apt):
+        try:
+            return int(apt.numero)
+        except ValueError:
+            return float('inf')
+    
+    apartamentos_subsolo_1 = sorted(list(apartamentos_subsolo_1), key=ordenar_por_numero)
+    apartamentos_subsolo_2 = sorted(list(apartamentos_subsolo_2), key=ordenar_por_numero)
+    
+    return render(request, 'tres_coelhos/tres_coelhos_configurar_duplas.html', {
+        'apartamentos_subsolo_1': apartamentos_subsolo_1,
+        'apartamentos_subsolo_2': apartamentos_subsolo_2,
+        'duplas_subsolo_1': duplas_subsolo_1,
+        'duplas_subsolo_2': duplas_subsolo_2,
+    })

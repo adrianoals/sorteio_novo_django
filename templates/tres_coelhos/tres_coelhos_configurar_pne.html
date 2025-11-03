@@ -1,0 +1,97 @@
+{% extends 'sorteio_novo/base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-4 text-center">Configurar Apartamentos PNE</h1>
+            <p class="text-center text-gray-600 mb-8">Selecione quais apartamentos são PNE, organizados por subsolo</p>
+            
+            <form method="post" action="{% url 'tres_coelhos_configurar_pne' %}" id="formPNE">
+                {% csrf_token %}
+                
+                {% if apartamentos_subsolo_1 %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-light text-gray-800 mb-4 pb-2 border-b border-gray-200">Subsolo 1</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {% for apt in apartamentos_subsolo_1 %}
+                        <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition">
+                            <input type="checkbox" name="apartamentos_pne" value="{{ apt.id }}" 
+                                   {% if apt.is_pne %}checked{% endif %}
+                                   class="w-5 h-5 text-[#5E17EB] border-gray-300 rounded focus:ring-[#5E17EB]">
+                            <span class="text-gray-700 font-medium">{{ apt.numero }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if apartamentos_subsolo_2 %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-light text-gray-800 mb-4 pb-2 border-b border-gray-200">Subsolo 2</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {% for apt in apartamentos_subsolo_2 %}
+                        <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition">
+                            <input type="checkbox" name="apartamentos_pne" value="{{ apt.id }}" 
+                                   {% if apt.is_pne %}checked{% endif %}
+                                   class="w-5 h-5 text-[#5E17EB] border-gray-300 rounded focus:ring-[#5E17EB]">
+                            <span class="text-gray-700 font-medium">{{ apt.numero }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if apartamentos_sem_subsolo %}
+                <div class="mb-8">
+                    <h2 class="text-2xl font-light text-gray-800 mb-4 pb-2 border-b border-gray-200">Sem Subsolo Definido</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        {% for apt in apartamentos_sem_subsolo %}
+                        <label class="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition">
+                            <input type="checkbox" name="apartamentos_pne" value="{{ apt.id }}" 
+                                   {% if apt.is_pne %}checked{% endif %}
+                                   class="w-5 h-5 text-[#5E17EB] border-gray-300 rounded focus:ring-[#5E17EB]">
+                            <span class="text-gray-700 font-medium">{{ apt.numero }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="text-center mt-8">
+                    <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105">
+                        Salvar Configuração PNE
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-8 text-center">
+                <a href="{% url 'tres_coelhos_sorteio' %}" class="text-[#5E17EB] hover:text-[#4912b8] font-light">
+                    ← Voltar para Sorteio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('formPNE');
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    
+    // Contador de selecionados
+    const updateCounter = () => {
+        const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+        console.log(`Apartamentos PNE selecionados: ${selected}`);
+    };
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateCounter);
+    });
+    
+    updateCounter();
+});
+</script>
+{% endblock %}
+
