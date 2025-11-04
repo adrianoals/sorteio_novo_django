@@ -502,6 +502,11 @@ def tres_coelhos_dupla_excel(request):
     return response
 
 
+def tres_coelhos_menu(request):
+    """View para exibir o menu principal do app tres_coelhos"""
+    return render(request, 'tres_coelhos/tres_coelhos_menu.html')
+
+
 def tres_coelhos_zerar(request):
     if request.method == 'POST':
         Sorteio.objects.all().delete()

@@ -1,0 +1,50 @@
+{% extends 'sorteio_novo/base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">Menu - Três Coelhos</h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <!-- Botão: Resetar Sorteio -->
+                <div class="text-center">
+                    <form method="post" action="{% url 'tres_coelhos_zerar' %}" class="mb-4">
+                        {% csrf_token %}
+                        <h5 class="text-lg font-light text-gray-600 mb-4">Resetar Sorteio</h5>
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 w-full">
+                            Zerar Sorteio
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Botão: Configurar PNE -->
+                <div class="text-center">
+                    <h5 class="text-lg font-light text-gray-600 mb-4">Definir Apartamentos PNE</h5>
+                    <a href="{% url 'tres_coelhos_configurar_pne' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 w-full">
+                        Configurar PNE
+                    </a>
+                </div>
+
+                <!-- Botão: Configurar Duplas -->
+                <div class="text-center">
+                    <h5 class="text-lg font-light text-gray-600 mb-4">Definir Duplas de Apartamentos</h5>
+                    <a href="{% url 'tres_coelhos_configurar_duplas' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 w-full">
+                        Configurar Duplas
+                    </a>
+                </div>
+
+                <!-- Botão: Iniciar Sorteio -->
+                <div class="text-center">
+                    <h5 class="text-lg font-light text-gray-600 mb-4">Iniciar Sorteio de Vagas</h5>
+                    <a href="{% url 'tres_coelhos_sorteio' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 w-full">
+                        Iniciar Sorteio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
