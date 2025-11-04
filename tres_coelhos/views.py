@@ -534,25 +534,37 @@ def tres_coelhos_zerar(request):
     
 
 def tres_coelhos_resultado(request):
-    # Obtenha os resultados do sorteio e do sorteio duplo
-    resultados_sorteio = list(Sorteio.objects.all())
-    resultados_sorteio_dupla = list(SorteioDupla.objects.all())
+    # Obtenha os resultados do sorteio e do sorteio duplo com select_related para otimizar
+    resultados_sorteio = list(Sorteio.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').all())
+    resultados_sorteio_dupla = list(SorteioDupla.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').all())
 
     # Combine os resultados em uma única lista
     resultados_combinados = resultados_sorteio + resultados_sorteio_dupla
 
-    # Ordene os resultados combinados pelo ID
-    resultados_combinados.sort(key=lambda x: x.id)
+    # Criar mapeamento de vaga_id -> apartamento_numero para encontrar o apartamento que divide a vaga dupla
+    vaga_para_apartamento = {}
+    for sorteio in resultados_combinados:
+        if hasattr(sorteio, 'vaga') and sorteio.vaga:
+            vaga_para_apartamento[sorteio.vaga.id] = sorteio.apartamento.numero if hasattr(sorteio, 'apartamento') and sorteio.apartamento else '-'
 
     # Crie uma lista unificada com dados consistentes
     resultados_formatados = []
     for sorteio in resultados_combinados:
-        apartamento_numero = sorteio.apartamento.numero if hasattr(sorteio, 'apartamento') else '-'
-        vaga_numero = sorteio.vaga.numero if hasattr(sorteio, 'vaga') else '-'
-        vaga_subsolo = sorteio.vaga.subsolo if hasattr(sorteio, 'vaga') else '-'
-        tipo_vaga = sorteio.vaga.get_tipo_display() if hasattr(sorteio, 'vaga') else '-'
-        especialidade = sorteio.vaga.get_especial_display() if hasattr(sorteio, 'vaga') else '-'
-        dupla_com_numero = sorteio.vaga.dupla_com.numero if hasattr(sorteio.vaga, 'dupla_com') and sorteio.vaga.dupla_com else '-'
+        apartamento_numero = sorteio.apartamento.numero if hasattr(sorteio, 'apartamento') and sorteio.apartamento else '-'
+        vaga_numero = sorteio.vaga.numero if hasattr(sorteio, 'vaga') and sorteio.vaga else '-'
+        vaga_subsolo = f'Subsolo {sorteio.vaga.subsolo}' if hasattr(sorteio, 'vaga') and sorteio.vaga and sorteio.vaga.subsolo else '-'
+        tipo_vaga = sorteio.vaga.get_tipo_display() if hasattr(sorteio, 'vaga') and sorteio.vaga else '-'
+        especialidade = sorteio.vaga.get_especial_display() if hasattr(sorteio, 'vaga') and sorteio.vaga else '-'
+        
+        # Dupla Com (número da vaga dupla)
+        dupla_com_numero = sorteio.vaga.dupla_com.numero if (hasattr(sorteio, 'vaga') and sorteio.vaga and 
+                                                             sorteio.vaga.dupla_com) else '-'
+        
+        # Apartamento que divide a vaga (se houver vaga dupla)
+        apartamento_que_divide = '-'
+        if hasattr(sorteio, 'vaga') and sorteio.vaga and sorteio.vaga.dupla_com:
+            vaga_dupla_id = sorteio.vaga.dupla_com.id
+            apartamento_que_divide = vaga_para_apartamento.get(vaga_dupla_id, '-')
 
         resultados_formatados.append({
             'apartamento': apartamento_numero,
@@ -560,8 +572,18 @@ def tres_coelhos_resultado(request):
             'subsolo': vaga_subsolo,
             'tipo_vaga': tipo_vaga,
             'especialidade': especialidade,
-            'dupla_com': dupla_com_numero
+            'dupla_com': dupla_com_numero,
+            'apartamento_que_divide': apartamento_que_divide
         })
+
+    # Ordene os resultados por número de apartamento (ordenação numérica)
+    def ordenar_por_numero_apartamento(item):
+        try:
+            return int(item['apartamento']) if item['apartamento'].isdigit() else float('inf')
+        except (ValueError, AttributeError):
+            return float('inf')
+
+    resultados_formatados.sort(key=ordenar_por_numero_apartamento)
 
     # Passe os dados formatados para o contexto
     context = {
