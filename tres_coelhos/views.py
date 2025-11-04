@@ -472,7 +472,14 @@ def tres_coelhos_dupla_excel(request):
     ws = wb.active
 
     # Ordenar os resultados do sorteio pelo ID do apartamento
-    resultados_sorteio = SorteioDupla.objects.select_related('apartamento', 'vaga').order_by('apartamento__id').all()
+    resultados_sorteio = SorteioDupla.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').order_by('apartamento__id').all()
+
+    # Criar mapeamento de vaga_id -> apartamento_numero para encontrar o apartamento que divide a vaga dupla
+    # Exemplo: Se Vaga 1 faz dupla com Vaga 2, e o Apartamento A está na Vaga 1,
+    # precisamos saber qual apartamento está na Vaga 2
+    vaga_para_apartamento = {}
+    for sorteio in resultados_sorteio:
+        vaga_para_apartamento[sorteio.vaga.id] = sorteio.apartamento.numero
 
     # Pegar o horário de conclusão do sorteio
     horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
@@ -489,7 +496,17 @@ def tres_coelhos_dupla_excel(request):
 
         # Adicionar "Dupla Com" (número da vaga associada, se houver)
         ws[f'F{linha}'] = sorteio.vaga.dupla_com.numero if sorteio.vaga.dupla_com else "N/A"  # Número da vaga dupla
-
+        
+        # Adicionar "Apartamento que Divide a Vaga" (qual apartamento está na vaga dupla)
+        # Exemplo: Se Vaga 1 faz dupla com Vaga 2, e o Apartamento A está na Vaga 1,
+        # então mostra qual apartamento está na Vaga 2
+        if sorteio.vaga.dupla_com:
+            vaga_dupla_id = sorteio.vaga.dupla_com.id
+            apartamento_que_divide = vaga_para_apartamento.get(vaga_dupla_id, "N/A")
+            ws[f'G{linha}'] = apartamento_que_divide
+        else:
+            ws[f'G{linha}'] = "N/A"
+        
         linha += 1
 
     # Configurar a resposta para o download do Excel
