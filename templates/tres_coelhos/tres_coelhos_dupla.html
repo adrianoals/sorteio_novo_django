@@ -91,6 +91,12 @@
                 <img src="{% static 'assets/images/qrcode_coelhos.png' %}" alt="QR Code" class="mx-auto max-w-[200px]"/>
                 <p class="text-gray-500 font-light mt-4">Escaneie o QR Code para acessar seu resultado.</p>
             </div>
+            
+            <div class="text-center mt-8">
+                <a href="{% url 'tres_coelhos_resultado_excel' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                    Exportar Relatório Completo
+                </a>
+            </div>
             {% endif %}
         </div>
     </div>

@@ -465,7 +465,7 @@ def tres_coelhos_dupla(request):
 
 def tres_coelhos_dupla_excel(request):
     # Caminho do modelo Excel
-    caminho_modelo = 'setup/static/assets/modelos/sorteio_novo2.xlsx'
+    caminho_modelo = 'setup/static/assets/modelos/resultado_sorteio_dupla_tres_coelhos.xlsx'
 
     # Carregar o modelo existente
     wb = load_workbook(caminho_modelo)
@@ -512,6 +512,112 @@ def tres_coelhos_dupla_excel(request):
     # Configurar a resposta para o download do Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="resultado_sorteio_dupla_tres_coelhos.xlsx"'
+
+    # Salvar o arquivo Excel na resposta
+    wb.save(response)
+
+    return response
+
+
+def tres_coelhos_resultado_excel(request):
+    """View para exportar o resultado completo do sorteio (vagas livres + vagas duplas) para Excel"""
+    # Caminho do modelo Excel
+    caminho_modelo = 'setup/static/assets/modelos/resultado_sorteio_3coelhos_final.xlsx'
+
+    # Carregar o modelo existente
+    wb = load_workbook(caminho_modelo)
+    ws = wb.active
+
+    # Obter os resultados do sorteio e do sorteio duplo com select_related para otimizar
+    resultados_sorteio = list(Sorteio.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').all())
+    resultados_sorteio_dupla = list(SorteioDupla.objects.select_related('apartamento', 'vaga', 'vaga__dupla_com').all())
+
+    # Combine os resultados em uma única lista
+    resultados_combinados = resultados_sorteio + resultados_sorteio_dupla
+
+    # Criar mapeamento de vaga_id -> apartamento_numero para encontrar o apartamento que divide a vaga dupla
+    vaga_para_apartamento = {}
+    for sorteio in resultados_combinados:
+        if hasattr(sorteio, 'vaga') and sorteio.vaga:
+            vaga_para_apartamento[sorteio.vaga.id] = sorteio.apartamento.numero if hasattr(sorteio, 'apartamento') and sorteio.apartamento else '-'
+
+    # Crie uma lista unificada com dados consistentes
+    resultados_formatados = []
+    for sorteio in resultados_combinados:
+        apartamento_numero = sorteio.apartamento.numero if hasattr(sorteio, 'apartamento') and sorteio.apartamento else '-'
+        vaga_numero = sorteio.vaga.numero if hasattr(sorteio, 'vaga') and sorteio.vaga else '-'
+        vaga_subsolo = sorteio.vaga.subsolo if hasattr(sorteio, 'vaga') and sorteio.vaga and sorteio.vaga.subsolo else None
+        subsolo_str = f'Subsolo {vaga_subsolo}' if vaga_subsolo else '-'
+        tipo_vaga = sorteio.vaga.get_tipo_display() if hasattr(sorteio, 'vaga') and sorteio.vaga else '-'
+        especialidade = sorteio.vaga.get_especial_display() if hasattr(sorteio, 'vaga') and sorteio.vaga else '-'
+        
+        # Dupla Com (número da vaga dupla)
+        dupla_com_numero = sorteio.vaga.dupla_com.numero if (hasattr(sorteio, 'vaga') and sorteio.vaga and 
+                                                             sorteio.vaga.dupla_com) else '-'
+        
+        # Apartamento que divide a vaga (se houver vaga dupla)
+        apartamento_que_divide = '-'
+        if hasattr(sorteio, 'vaga') and sorteio.vaga and sorteio.vaga.dupla_com:
+            vaga_dupla_id = sorteio.vaga.dupla_com.id
+            apartamento_que_divide = vaga_para_apartamento.get(vaga_dupla_id, '-')
+
+        resultados_formatados.append({
+            'apartamento': apartamento_numero,
+            'vaga': vaga_numero,
+            'subsolo': subsolo_str,
+            'tipo_vaga': tipo_vaga,
+            'especialidade': especialidade,
+            'dupla_com': dupla_com_numero,
+            'apartamento_que_divide': apartamento_que_divide
+        })
+
+    # Ordene os resultados por número de apartamento (ordenação numérica)
+    def ordenar_por_numero_apartamento(item):
+        try:
+            return int(item['apartamento']) if item['apartamento'].isdigit() else float('inf')
+        except (ValueError, AttributeError):
+            return float('inf')
+
+    resultados_formatados.sort(key=ordenar_por_numero_apartamento)
+
+    # Pegar o horário de conclusão do sorteio (usar o mais recente entre os dois)
+    horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
+    horario_conclusao_dupla = request.session.get('horario_conclusao_dupla', 'Horário não disponível')
+    
+    # Usar o horário mais recente ou padrão
+    if horario_conclusao_dupla != 'Horário não disponível':
+        horario_final = horario_conclusao_dupla
+    else:
+        horario_final = horario_conclusao
+    
+    # Preencher a data do sorteio (ajustar a célula conforme o modelo)
+    # Verificar se há uma célula padrão para data, senão usar A8 ou B8
+    try:
+        ws['A8'] = f"Sorteio realizado em: {horario_final}"
+    except:
+        try:
+            ws['B8'] = f"Sorteio realizado em: {horario_final}"
+        except:
+            pass
+
+    # Começar a partir da linha 10 (baseado no layout do modelo)
+    linha = 10
+    for resultado in resultados_formatados:
+        # Preencher as colunas conforme o modelo
+        # Ajustar as colunas conforme a estrutura do arquivo resultado_sorteio_3coelhos_final.xlsx
+        ws[f'A{linha}'] = resultado['apartamento']  # Número do apartamento
+        ws[f'B{linha}'] = resultado['vaga']  # Número da vaga
+        ws[f'C{linha}'] = resultado['subsolo']  # Subsolo
+        ws[f'D{linha}'] = resultado['tipo_vaga']  # Tipo da vaga
+        ws[f'E{linha}'] = resultado['especialidade']  # Especialidade da vaga
+        ws[f'F{linha}'] = resultado['dupla_com']  # Dupla Com (número da vaga dupla)
+        ws[f'G{linha}'] = resultado['apartamento_que_divide']  # Apartamento que Divide a Vaga
+        
+        linha += 1
+
+    # Configurar a resposta para o download do Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="resultado_sorteio_completo_tres_coelhos.xlsx"'
 
     # Salvar o arquivo Excel na resposta
     wb.save(response)
