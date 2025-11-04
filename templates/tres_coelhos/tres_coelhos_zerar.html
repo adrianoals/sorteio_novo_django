@@ -7,15 +7,40 @@
         <div class="mb-8">
             <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">VAMOS COMEÇAR!</h1>
             
-            <form method="post" action="{% url 'tres_coelhos_zerar' %}" class="max-w-md mx-auto">
-                {% csrf_token %}
-                <div class="text-center">
-                    <h5 class="text-lg font-light text-gray-600 mb-6">Clique aqui para zerar o sorteio</h5>
-                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105" id="botao-zerar">
-                        Zerar Sorteio
-                    </button>
+            {% if sorteio_zerado %}
+                <!-- Mensagem de sucesso após zerar -->
+                <div class="max-w-md mx-auto text-center">
+                    <div class="bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg mb-6">
+                        <p class="text-lg font-medium">✅ Todos os sorteios foram excluídos com sucesso!</p>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="{% url 'tres_coelhos_menu' %}" class="inline-block bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105">
+                            Voltar para Menu
+                        </a>
+                        <a href="{% url 'tres_coelhos_sorteio' %}" class="inline-block bg-green-600 hover:bg-green-700 text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105">
+                            Realizar Sorteio
+                        </a>
+                    </div>
                 </div>
-            </form>
+            {% else %}
+                <!-- Formulário para zerar sorteio -->
+                <form method="post" action="{% url 'tres_coelhos_zerar' %}" class="max-w-md mx-auto">
+                    {% csrf_token %}
+                    <div class="text-center">
+                        <h5 class="text-lg font-light text-gray-600 mb-6">Clique aqui para zerar o sorteio</h5>
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105" id="botao-zerar">
+                            Zerar Sorteio
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-8 text-center">
+                    <a href="{% url 'tres_coelhos_menu' %}" class="text-[#5E17EB] hover:text-[#4912b8] font-light">
+                        ← Voltar para Menu
+                    </a>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>

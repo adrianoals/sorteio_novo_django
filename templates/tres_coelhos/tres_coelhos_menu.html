@@ -10,13 +10,10 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
                 <!-- Botão: Resetar Sorteio -->
                 <div class="text-center">
-                    <form method="post" action="{% url 'tres_coelhos_zerar' %}" class="mb-4">
-                        {% csrf_token %}
-                        <h5 class="text-lg font-light text-gray-600 mb-4">Resetar Sorteio</h5>
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 w-full">
-                            Zerar Sorteio
-                        </button>
-                    </form>
+                    <h5 class="text-lg font-light text-gray-600 mb-4">Resetar Sorteio</h5>
+                    <a href="{% url 'tres_coelhos_zerar' %}" class="inline-block bg-red-600 hover:bg-red-700 text-white font-light py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 w-full">
+                        Zerar Sorteio
+                    </a>
                 </div>
 
                 <!-- Botão: Configurar PNE -->

@@ -634,9 +634,14 @@ def tres_coelhos_zerar(request):
     if request.method == 'POST':
         Sorteio.objects.all().delete()
         SorteioDupla.objects.all().delete()
-        return redirect('tres_coelhos_sorteio')
+        # Renderizar a página com mensagem de sucesso
+        return render(request, 'tres_coelhos/tres_coelhos_zerar.html', {
+            'sorteio_zerado': True
+        })
     else:
-        return render(request, 'tres_coelhos/tres_coelhos_zerar.html')
+        return render(request, 'tres_coelhos/tres_coelhos_zerar.html', {
+            'sorteio_zerado': False
+        })
     
 
 def tres_coelhos_resultado(request):
