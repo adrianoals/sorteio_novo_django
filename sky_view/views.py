@@ -169,28 +169,21 @@ def sky_view_excel(request):
     wb = load_workbook(caminho_modelo)
     ws = wb.active
 
-    # Ordenar os resultados do sorteio por apartamento e depois por vaga
-    resultados_sorteio = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__numero', 'vaga__numero')
+    # Pegar todos os sorteios ordenados por apartamento
+    resultados_sorteio = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__numero')
 
     # Pegar o horário de conclusão do sorteio
     horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
     ws['A8'] = f"Sorteio realizado em: {horario_conclusao}"
 
-    # Rastrear apartamentos já processados para evitar duplicatas no Excel
-    apartamentos_processados = set()
-    
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
     for sorteio in resultados_sorteio:
-        # Verificar se já processamos este apartamento+vaga (evitar duplicatas)
-        chave_unica = (sorteio.apartamento.id, sorteio.vaga.id)
-        if chave_unica not in apartamentos_processados:
-            ws[f'A{linha}'] = sorteio.apartamento.numero  # Número do apartamento
-            ws[f'B{linha}'] = sorteio.vaga.numero  # Número da vaga
-            ws[f'C{linha}'] = sorteio.vaga.subsolo  # Subsolo (removido "Subsolo " prefixo)
-            ws[f'D{linha}'] = sorteio.vaga.tipo_vaga  # Tipo da vaga
-            apartamentos_processados.add(chave_unica)
-            linha += 1
+        ws[f'A{linha}'] = sorteio.apartamento.numero  # Número do apartamento
+        ws[f'B{linha}'] = sorteio.vaga.numero  # Número da vaga
+        ws[f'C{linha}'] = sorteio.vaga.subsolo  # Subsolo
+        ws[f'D{linha}'] = sorteio.vaga.tipo_vaga  # Tipo da vaga
+        linha += 1
 
     # Configurar a resposta para o download do Excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
