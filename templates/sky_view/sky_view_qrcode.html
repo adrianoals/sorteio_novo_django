@@ -1,21 +1,18 @@
-{% extends 'sorteio_novo/base_sorteio.html' %}
+{% extends 'sorteio_novo/base_tailwind.html' %}
 {% load static %}
+
 {% block content %}
-
-<div class="container">
-    <h1 class="fw-normal lh-1 text-center mb-5" id="titulo">RESULTADO SORTEIO!</h1>
-</div>
-
-<main>
-    <div class="p-4" id="container-sorteio">
-        <div class="row mt-5 margem-up">
-            <div class="col-md-3"></div> 
-
-            <div class="col-md-6 text-center text-dark">
-                <h1 class="mt-5 mb-5">Selecione seu apartamento!</h1>
-                <div class="filtro-apartamento text-center mb-5">
-                    <form method="get" action="{% url 'sky_view_qrcode' %}">
-                        <select id="numeroApartamento" name="apartamento" class="form-select filtro-destacado">
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">RESULTADO SORTEIO!</h1>
+            
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-2xl font-light text-gray-900 text-center mb-8">Selecione seu apartamento!</h2>
+                
+                <div class="text-center mb-8">
+                    <form method="get" action="{% url 'sky_view_qrcode' %}" class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                        <select id="numeroApartamento" name="apartamento" class="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:ring-[#5E17EB] focus:border-[#5E17EB]">
                             <option value="" disabled {% if not apartamento_selecionado %}selected{% endif %}>Selecione seu apartamento</option>
                             {% for apt in apartamentos_disponiveis %}
                                 {% if apt.numero == apartamento_selecionado %}
@@ -25,25 +22,28 @@
                                 {% endif %}
                             {% endfor %}
                         </select>
-                        <button type="submit" class="btn btn-primary mt-3">Filtrar</button>
+                        <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                            Filtrar
+                        </button>
                     </form>
                 </div>
-            </div>
 
-            <div class="col-md-3"></div>
+                {% if resultados_filtrados %}
+                <div class="mt-8">
+                    <h3 class="text-xl font-light text-gray-900 text-center mb-6">Vagas para o apartamento: {{ apartamento_selecionado }}</h3>
+                    <div class="space-y-4">
+                        {% for sorteio in resultados_filtrados %}
+                        <div class="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300">
+                            <p class="text-lg font-medium text-gray-900 text-center">
+                                {{ sorteio.vaga.numero }} - {{ sorteio.vaga.subsolo }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
         </div>
-
-        {% if resultados_filtrados %}
-            <div class="resultados-filtrados mt-2 text-dark text-center">
-                <h3 class="text-center mb-4">Vagas para o apartamento: {{ apartamento_selecionado }}</h3>
-                {% for sorteio in resultados_filtrados %}
-                    <h5>
-                        {{ sorteio.vaga.numero }} - {{ sorteio.vaga.subsolo }}
-                    </h5>
-                {% endfor %}
-            </div>
-        {% endif %}
     </div>
-</main>
-
+</div>
 {% endblock %}
