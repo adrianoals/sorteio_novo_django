@@ -41,6 +41,7 @@
                         <h3 class="text-lg font-medium text-gray-700 mb-4">Duplas Existentes</h3>
                         <div class="space-y-2 mb-4">
                             {% for dupla in duplas_subsolo_1 %}
+                            {% if dupla.apartamento_2 %}
                             <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
                                 <div class="flex items-center space-x-4">
                                     <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_1.numero }}</span>
@@ -53,17 +54,31 @@
                                     ✕ Excluir
                                 </button>
                             </div>
+                            {% else %}
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_1.numero }}</span>
+                                    <span class="text-gray-500">↔</span>
+                                    <span class="text-gray-500 italic">Dupla incompleta (sem segundo apartamento)</span>
+                                </div>
+                                <button type="button" 
+                                        onclick="excluirDupla({{ dupla.id }}, '{{ dupla.apartamento_1.numero }}', 'N/A')"
+                                        class="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded transition">
+                                    ✕ Excluir
+                                </button>
+                            </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
                     
                     <!-- Formulário para criar novas duplas -->
-                    <div class="space-y-4" id="duplas_subsolo_1">
+                    <div class="space-y-4" id="duplas_subsolo_1" data-subsolo="1">
                         <div class="dupla-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
                             <div class="flex-1">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 1</label>
-                                <select name="dupla_1_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                <select name="dupla_sub1_0_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
                                     <option value="">Selecione...</option>
                                     {% for apt in apartamentos_subsolo_1 %}
                                     <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
@@ -73,7 +88,7 @@
                             <span class="text-gray-500 text-xl mt-6">↔</span>
                             <div class="flex-1">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 2</label>
-                                <select name="dupla_1_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                <select name="dupla_sub1_0_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
                                     <option value="">Selecione...</option>
                                     {% for apt in apartamentos_subsolo_1 %}
                                     <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
@@ -98,29 +113,55 @@
                         <h3 class="text-lg font-medium text-gray-700 mb-4">Duplas Existentes</h3>
                         <div class="space-y-2 mb-4">
                             {% for dupla in duplas_subsolo_2 %}
+                            {% if dupla.apartamento_1 and dupla.apartamento_2 %}
                             <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
                                 <div class="flex items-center space-x-4">
-                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_1.numero }}</span>
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_1.numero|default:"N/A" }}</span>
                                     <span class="text-gray-500">↔</span>
-                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_2.numero }}</span>
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_2.numero|default:"N/A" }}</span>
                                 </div>
                                 <button type="button" 
-                                        onclick="excluirDupla({{ dupla.id }}, '{{ dupla.apartamento_1.numero }}', '{{ dupla.apartamento_2.numero }}')"
+                                        onclick="excluirDupla({{ dupla.id }}, '{{ dupla.apartamento_1.numero|default:"N/A" }}', '{{ dupla.apartamento_2.numero|default:"N/A" }}')"
                                         class="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded transition">
                                     ✕ Excluir
                                 </button>
                             </div>
+                            {% elif dupla.apartamento_1 %}
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-gray-700 font-medium">Apartamento {{ dupla.apartamento_1.numero|default:"N/A" }}</span>
+                                    <span class="text-gray-500">↔</span>
+                                    <span class="text-gray-500 italic">Dupla incompleta (sem segundo apartamento)</span>
+                                </div>
+                                <button type="button" 
+                                        onclick="excluirDupla({{ dupla.id }}, '{{ dupla.apartamento_1.numero|default:"N/A" }}', 'N/A')"
+                                        class="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded transition">
+                                    ✕ Excluir
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200 hover:bg-red-100 transition">
+                                <div class="flex items-center space-x-4">
+                                    <span class="text-red-700 font-medium">⚠️ Dupla inválida (ID: {{ dupla.id }})</span>
+                                </div>
+                                <button type="button" 
+                                        onclick="excluirDupla({{ dupla.id }}, 'N/A', 'N/A')"
+                                        class="text-red-600 hover:text-red-800 hover:bg-red-50 px-3 py-1 rounded transition">
+                                    ✕ Excluir
+                                </button>
+                            </div>
+                            {% endif %}
                             {% endfor %}
                         </div>
                     </div>
                     {% endif %}
                     
                     <!-- Formulário para criar novas duplas -->
-                    <div class="space-y-4" id="duplas_subsolo_2">
+                    <div class="space-y-4" id="duplas_subsolo_2" data-subsolo="2">
                         <div class="dupla-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
                             <div class="flex-1">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 1</label>
-                                <select name="dupla_2_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                <select name="dupla_sub2_0_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
                                     <option value="">Selecione...</option>
                                     {% for apt in apartamentos_subsolo_2 %}
                                     <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
@@ -130,7 +171,7 @@
                             <span class="text-gray-500 text-xl mt-6">↔</span>
                             <div class="flex-1">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 2</label>
-                                <select name="dupla_2_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+                                <select name="dupla_sub2_0_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
                                     <option value="">Selecione...</option>
                                     {% for apt in apartamentos_subsolo_2 %}
                                     <option value="{{ apt.id }}" class="text-gray-900">Apartamento {{ apt.numero }}</option>
@@ -163,8 +204,8 @@
 
 <script>
 let contadorDuplas = {
-    1: 2,  // Contador para subsolo 1 (começa em 2 porque já tem uma)
-    2: 3   // Contador para subsolo 2 (começa em 3 porque já tem uma)
+    1: 1,  // Contador para subsolo 1 (começa em 1 porque já tem uma com índice 0)
+    2: 1   // Contador para subsolo 2 (começa em 1 porque já tem uma com índice 0)
 };
 
 function adicionarDupla(subsolo) {
@@ -176,7 +217,7 @@ function adicionarDupla(subsolo) {
     novoItem.className = 'dupla-item flex items-center space-x-4 p-4 border border-gray-200 rounded-lg mt-4 bg-gray-50';
     
     // Buscar o primeiro select do subsolo para pegar as opções de apartamentos
-    const primeiroSelect = container.querySelector('select[name^="dupla_"][name$="_apt1"]');
+    const primeiroSelect = container.querySelector('select[name^="dupla_sub"][name$="_apt1"]');
     const optionsHtml = Array.from(primeiroSelect.options)
         .map(opt => `<option value="${opt.value}">${opt.text}</option>`)
         .join('');
@@ -184,7 +225,7 @@ function adicionarDupla(subsolo) {
     novoItem.innerHTML = `
         <div class="flex-1">
             <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 1</label>
-            <select name="dupla_${index}_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+            <select name="dupla_sub${subsolo}_${index}_apt1" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
                 <option value="">Selecione...</option>
                 ${optionsHtml}
             </select>
@@ -192,7 +233,7 @@ function adicionarDupla(subsolo) {
         <span class="text-gray-500 text-xl mt-6">↔</span>
         <div class="flex-1">
             <label class="block text-sm font-medium text-gray-700 mb-2">Apartamento 2</label>
-            <select name="dupla_${index}_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
+            <select name="dupla_sub${subsolo}_${index}_apt2" class="select-dupla w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-[#5E17EB] focus:border-[#5E17EB] bg-white text-gray-900">
                 <option value="">Selecione...</option>
                 ${optionsHtml}
             </select>
@@ -260,7 +301,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('=== SUBMIT DO FORMULÁRIO INICIADO ===');
             
             // PRIMEIRO: Verificar diretamente os selects antes de criar FormData
-            const allSelects = document.querySelectorAll('select[name^="dupla_"]');
+            const allSelects = document.querySelectorAll('select[name^="dupla_sub"]');
             console.log(`Total de selects encontrados: ${allSelects.length}`);
             
             const duplas = {};
@@ -272,15 +313,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`Select direto: ${name} = "${value}" (tipo: ${typeof value})`);
                 
                 if (value && value.trim() !== '') {
+                    // Novo formato: dupla_sub1_0_apt1 ou dupla_sub2_1_apt2
+                    // parts = ['dupla', 'sub1', '0', 'apt1']
                     const parts = name.split('_');
-                    if (parts.length === 3 && parts[0] === 'dupla' && parts[2] in ['apt1', 'apt2']) {
-                        const index = parts[1];
-                        const campo = parts[2];
-                        if (!duplas[index]) {
-                            duplas[index] = {};
+                    console.log(`  -> Parsing ${name}: parts = [${parts.join(', ')}], length = ${parts.length}`);
+                    
+                    if (parts.length === 4 && parts[0] === 'dupla' && parts[1].startsWith('sub') && ['apt1', 'apt2'].includes(parts[3])) {
+                        const subsoloKey = parts[1]; // 'sub1' ou 'sub2'
+                        const index = parts[2]; // '0', '1', '2', etc.
+                        const campo = parts[3]; // 'apt1' ou 'apt2'
+                        const keyUnico = `${subsoloKey}_${index}`; // 'sub1_0', 'sub2_1', etc.
+                        
+                        if (!duplas[keyUnico]) {
+                            duplas[keyUnico] = {};
                         }
-                        duplas[index][campo] = value;
-                        console.log(`  -> Adicionado: duplas[${index}][${campo}] = ${value}`);
+                        duplas[keyUnico][campo] = value;
+                        console.log(`  -> Adicionado: duplas[${keyUnico}][${campo}] = ${value}`);
+                    } else {
+                        console.log(`  -> Formato inválido ou não reconhecido: ${name}`);
+                        console.log(`  -> Debug: parts.length=${parts.length}, parts[0]=${parts[0]}, parts[1]=${parts[1]}, parts[1].startsWith('sub')=${parts[1]?.startsWith('sub')}, parts[3]=${parts[3]}, ['apt1','apt2'].includes(parts[3])=${['apt1','apt2'].includes(parts[3])}`);
                     }
                 }
             });

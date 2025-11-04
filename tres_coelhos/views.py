@@ -637,18 +637,25 @@ def tres_coelhos_configurar_duplas(request):
                 print(f"DEBUG: {key} = '{value_str}' (vazio: {not value_str})")
             
             # Agrupar por índice de dupla
+            # Novo formato: dupla_sub1_0_apt1 ou dupla_sub2_1_apt2
+            # parts = ['dupla', 'sub1', '0', 'apt1']
             duplas_dict = {}
             for key in duplas_keys:
-                # Formato: dupla_X_apt1 ou dupla_X_apt2
-                # Exemplo: dupla_1_apt1 -> ['dupla', '1', 'apt1']
                 parts = key.split('_')
-                if len(parts) == 3 and parts[0] == 'dupla' and parts[2] in ['apt1', 'apt2']:
-                    index = parts[1]  # O índice está na posição 1
+                if len(parts) == 4 and parts[0] == 'dupla' and parts[1].startswith('sub') and parts[3] in ['apt1', 'apt2']:
+                    subsolo_str = parts[1]  # 'sub1' ou 'sub2'
+                    index = parts[2]  # '0', '1', '2', etc.
+                    campo = parts[3]  # 'apt1' ou 'apt2'
+                    
+                    # Criar chave única combinando subsolo e índice
+                    key_unico = f"{subsolo_str}_{index}"  # 'sub1_0', 'sub2_1', etc.
+                    
                     value = request.POST.get(key, '').strip()
                     if value:  # Só adiciona se houver valor
-                        if index not in duplas_dict:
-                            duplas_dict[index] = {}
-                        duplas_dict[index][parts[2]] = value
+                        if key_unico not in duplas_dict:
+                            duplas_dict[key_unico] = {}
+                        duplas_dict[key_unico][campo] = value
+                        print(f"DEBUG: Agrupado {key} -> duplas_dict[{key_unico}][{campo}] = {value}")
             
             print(f"DEBUG: Duplas agrupadas: {duplas_dict}")
             
@@ -789,8 +796,47 @@ def tres_coelhos_configurar_duplas(request):
         'apartamento_1', 'apartamento_2'
     ).all()
     
-    duplas_subsolo_1 = [d for d in duplas_existentes if d.apartamento_1.subsolo == 1]
-    duplas_subsolo_2 = [d for d in duplas_existentes if d.apartamento_1.subsolo == 2]
+    # Filtrar duplas por subsolo
+    # Considerar duplas onde apartamento_1 tem o subsolo correto
+    # E apartamento_2 existe e tem o mesmo subsolo
+    duplas_subsolo_1 = []
+    duplas_subsolo_2 = []
+    
+    for d in duplas_existentes:
+        # Forçar avaliação dos objetos relacionados (evitar lazy loading)
+        if hasattr(d, 'apartamento_1') and d.apartamento_1:
+            # Forçar acesso ao subsolo para carregar o objeto
+            subsolo_apt1 = d.apartamento_1.subsolo
+            
+            if subsolo_apt1 == 1:
+                # Verificar se apartamento_2 existe e tem subsolo 1
+                if hasattr(d, 'apartamento_2') and d.apartamento_2:
+                    subsolo_apt2 = d.apartamento_2.subsolo
+                    if subsolo_apt2 == 1:
+                        duplas_subsolo_1.append(d)
+                # Também incluir duplas incompletas do subsolo 1 para debug
+                else:
+                    print(f"DEBUG: Dupla subsolo 1 incompleta - ID: {d.id}, Apt1: {d.apartamento_1.numero}")
+                    
+            elif subsolo_apt1 == 2:
+                # Verificar se apartamento_2 existe e tem subsolo 2
+                if hasattr(d, 'apartamento_2') and d.apartamento_2:
+                    subsolo_apt2 = d.apartamento_2.subsolo
+                    if subsolo_apt2 == 2:
+                        duplas_subsolo_2.append(d)
+                    else:
+                        print(f"DEBUG: Dupla subsolo 2 rejeitada - subsolos diferentes - ID: {d.id}, Apt1: {d.apartamento_1.numero} (subsolo {subsolo_apt1}), Apt2: {d.apartamento_2.numero if d.apartamento_2 else 'None'} (subsolo {subsolo_apt2})")
+                else:
+                    print(f"DEBUG: Dupla subsolo 2 incompleta - ID: {d.id}, Apt1: {d.apartamento_1.numero}")
+    
+    # Debug: logar duplas encontradas
+    print(f"DEBUG: Total de duplas existentes: {duplas_existentes.count()}")
+    print(f"DEBUG: Duplas subsolo 1: {len(duplas_subsolo_1)}")
+    print(f"DEBUG: Duplas subsolo 2: {len(duplas_subsolo_2)}")
+    for d in duplas_subsolo_2:
+        apt1_num = d.apartamento_1.numero if d.apartamento_1 else 'None'
+        apt2_num = d.apartamento_2.numero if d.apartamento_2 else 'None'
+        print(f"DEBUG: Dupla subsolo 2 - ID: {d.id}, Apt1: {apt1_num} (subsolo: {d.apartamento_1.subsolo if d.apartamento_1 else None}), Apt2: {apt2_num} (subsolo: {d.apartamento_2.subsolo if d.apartamento_2 else None})")
     
     # Obter IDs dos apartamentos que já estão em duplas (para excluir dos dropdowns)
     apartamentos_em_duplas_ids = set()
