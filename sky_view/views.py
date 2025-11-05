@@ -176,6 +176,12 @@ def sky_view_excel(request):
     horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
     ws['A8'] = f"Sorteio realizado em: {horario_conclusao}"
 
+    # Limpar linhas antigas a partir da linha 10 para evitar dados antigos
+    linha_inicial = 10
+    linha_maxima = ws.max_row
+    if linha_maxima >= linha_inicial:
+        ws.delete_rows(linha_inicial, linha_maxima - linha_inicial + 1)
+
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
     for sorteio in resultados_sorteio:
