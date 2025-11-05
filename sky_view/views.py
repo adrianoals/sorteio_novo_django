@@ -179,8 +179,12 @@ def sky_view_excel(request):
     # Limpar linhas antigas a partir da linha 10 para evitar dados antigos
     linha_inicial = 10
     linha_maxima = ws.max_row
-    if linha_maxima >= linha_inicial:
-        ws.delete_rows(linha_inicial, linha_maxima - linha_inicial + 1)
+    # Limpar todas as células das colunas A, B, C, D a partir da linha 10
+    for linha in range(linha_inicial, linha_maxima + 1):
+        ws[f'A{linha}'] = None
+        ws[f'B{linha}'] = None
+        ws[f'C{linha}'] = None
+        ws[f'D{linha}'] = None
 
     # Começar a partir da linha 10 (baseado no layout do seu modelo)
     linha = 10
