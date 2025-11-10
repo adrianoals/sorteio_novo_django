@@ -25,59 +25,50 @@ def sky_view_sorteio(request):
         sorteios_para_criar = []
 
         # ============================================
-        # 1. ALOCAR APARTAMENTO 505 (vaga restrita)
+        # 1. ALOCAR APARTAMENTO 505 (vaga fixa)
         # ============================================
         apt_505 = None
         for apt in todos_apartamentos:
-            if apt.numero == '505':
+            if apt.numero == '0505':
                 apt_505 = apt
                 break
 
         if apt_505:
-            # Vagas possíveis para o 505: 9, 10 ou 12 do 1º Subsolo
-            vagas_505 = []
-            for v in todas_vagas_simples:
-                if v.subsolo == '1º Subsolo' and v.id not in vagas_atribuidas_ids:
-                    # Extrair número da vaga (pode ser "Vaga 9", "Vaga 09", "9", etc.)
-                    numero_limpo = v.numero.replace('Vaga ', '').strip()
-                    # Verificar se é uma das vagas permitidas (9, 10 ou 12)
-                    if numero_limpo in ['9', '09', '10', '12']:
-                        vagas_505.append(v)
-            
-            if vagas_505:
-                vaga_505_encontrada = random.choice(vagas_505)
-                sorteios_para_criar.append(Sorteio(apartamento=apt_505, vaga=vaga_505_encontrada))
-                vagas_atribuidas_ids.add(vaga_505_encontrada.id)
-                apartamentos_atribuidos_ids.add(apt_505.id)
-                print(f"✅ Apartamento 505 → {vaga_505_encontrada.numero} ({vaga_505_encontrada.subsolo})")
+            # Vaga fixa para o 505: ID 123
+            try:
+                vaga_505 = Vaga.objects.get(id=123)
+                if vaga_505.id not in vagas_atribuidas_ids:
+                    sorteios_para_criar.append(Sorteio(apartamento=apt_505, vaga=vaga_505))
+                    vagas_atribuidas_ids.add(vaga_505.id)
+                    apartamentos_atribuidos_ids.add(apt_505.id)
+                    print(f"✅ Apartamento 0505 → Vaga ID {vaga_505.id} ({vaga_505.numero} - {vaga_505.subsolo})")
+                else:
+                    print(f"⚠️ Vaga ID 123 já foi atribuída")
+            except Vaga.DoesNotExist:
+                print(f"⚠️ Vaga ID 123 não encontrada")
 
         # ============================================
-        # 2. APARTAMENTOS COM DIREITO A DUAS VAGAS LIVRES
+        # 2. ALOCAR APARTAMENTO 1404 (vaga fixa)
         # ============================================
-        apts_duas_vagas = [
-            apt for apt in todos_apartamentos
-            if apt.direito_duas_vagas_livres and apt.id not in apartamentos_atribuidos_ids
-        ]
-        random.shuffle(apts_duas_vagas)
+        apt_1404 = None
+        for apt in todos_apartamentos:
+            if apt.numero == '1404':
+                apt_1404 = apt
+                break
 
-        # Filtrar vagas disponíveis uma única vez (otimização)
-        vagas_disponiveis_duas = [v for v in todas_vagas_simples if v.id not in vagas_atribuidas_ids]
-        random.shuffle(vagas_disponiveis_duas)
-        indice_vagas = 0
-
-        for apt in apts_duas_vagas:
-            # Atribuir 2 vagas simples
-            if indice_vagas + 1 < len(vagas_disponiveis_duas):
-                vaga1 = vagas_disponiveis_duas[indice_vagas]
-                vaga2 = vagas_disponiveis_duas[indice_vagas + 1]
-                
-                sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga1))
-                sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga2))
-                vagas_atribuidas_ids.add(vaga1.id)
-                vagas_atribuidas_ids.add(vaga2.id)
-                apartamentos_atribuidos_ids.add(apt.id)
-                indice_vagas += 2
-                print(f"✅ Apartamento {apt.numero} → 2 vagas: {vaga1.numero} e {vaga2.numero}")
+        if apt_1404 and apt_1404.id not in apartamentos_atribuidos_ids:
+            # Vaga fixa para o 1404: ID 188
+            try:
+                vaga_1404 = Vaga.objects.get(id=188)
+                if vaga_1404.id not in vagas_atribuidas_ids:
+                    sorteios_para_criar.append(Sorteio(apartamento=apt_1404, vaga=vaga_1404))
+                    vagas_atribuidas_ids.add(vaga_1404.id)
+                    apartamentos_atribuidos_ids.add(apt_1404.id)
+                    print(f"✅ Apartamento 1404 → Vaga ID {vaga_1404.id} ({vaga_1404.numero} - {vaga_1404.subsolo})")
+                else:
+                    print(f"⚠️ Vaga ID 188 já foi atribuída")
+            except Vaga.DoesNotExist:
+                print(f"⚠️ Vaga ID 188 não encontrada")
 
         # ============================================
         # 3. APARTAMENTOS COM DIREITO A VAGA DUPLA
@@ -237,3 +228,178 @@ def sky_view_zerar(request):
         return render(request, 'sky_view/sky_view_zerar.html')
     
 
+
+
+# # View para realizar o sorteio
+# def sky_view_sorteio(request):
+#     if request.method == 'POST':
+#         # Limpar registros anteriores de sorteio
+#         Sorteio.objects.all().delete()
+
+#         # Carregar todos os apartamentos e vagas de uma vez (otimização)
+#         todos_apartamentos = list(Apartamento.objects.all())
+#         todas_vagas_simples = list(Vaga.objects.filter(tipo_vaga='Simples'))
+#         todas_vagas_duplas = list(Vaga.objects.filter(tipo_vaga='Dupla'))
+
+#         # Usar set para rastrear IDs de vagas e apartamentos já atribuídos (mais eficiente)
+#         vagas_atribuidas_ids = set()
+#         apartamentos_atribuidos_ids = set()
+#         sorteios_para_criar = []
+
+#         # ============================================
+#         # 1. ALOCAR APARTAMENTO 505 (vaga restrita)
+#         # ============================================
+#         apt_505 = None
+#         for apt in todos_apartamentos:
+#             if apt.numero == '505':
+#                 apt_505 = apt
+#                 break
+
+#         if apt_505:
+#             # IDs das vagas possíveis para o 505: 123, 124 ou 126
+#             ids_vagas_505 = [123, 124, 126]
+#             vagas_505 = []
+            
+#             # Buscar as vagas diretamente no banco pelos IDs específicos (sem depender do tipo)
+#             vagas_505_disponiveis = Vaga.objects.filter(id__in=ids_vagas_505).exclude(id__in=vagas_atribuidas_ids)
+#             vagas_505 = list(vagas_505_disponiveis)
+            
+#             if vagas_505:
+#                 vaga_505_encontrada = random.choice(vagas_505)
+#                 sorteios_para_criar.append(Sorteio(apartamento=apt_505, vaga=vaga_505_encontrada))
+#                 vagas_atribuidas_ids.add(vaga_505_encontrada.id)
+#                 apartamentos_atribuidos_ids.add(apt_505.id)
+#                 print(f"✅ Apartamento 505 → Vaga ID {vaga_505_encontrada.id} ({vaga_505_encontrada.numero} - {vaga_505_encontrada.subsolo})")
+#             else:
+#                 print(f"⚠️ Apartamento 505 não encontrou vagas disponíveis (IDs: {ids_vagas_505})")
+
+#         # ============================================
+#         # 1.1. ALOCAR APARTAMENTO 1404 (vaga fixa)
+#         # ============================================
+#         apt_1404 = None
+#         for apt in todos_apartamentos:
+#             if apt.numero == '1404':
+#                 apt_1404 = apt
+#                 break
+
+#         if apt_1404 and apt_1404.id not in apartamentos_atribuidos_ids:
+#             # Vaga fixa para o 1404: ID 188
+#             vaga_1404 = None
+#             for v in todas_vagas_simples:
+#                 if v.id == 188 and v.id not in vagas_atribuidas_ids:
+#                     vaga_1404 = v
+#                     break
+            
+#             if vaga_1404:
+#                 sorteios_para_criar.append(Sorteio(apartamento=apt_1404, vaga=vaga_1404))
+#                 vagas_atribuidas_ids.add(vaga_1404.id)
+#                 apartamentos_atribuidos_ids.add(apt_1404.id)
+#                 print(f"✅ Apartamento 1404 → Vaga ID {vaga_1404.id} ({vaga_1404.numero} - {vaga_1404.subsolo})")
+
+#         # ============================================
+#         # 2. APARTAMENTOS COM DIREITO A DUAS VAGAS LIVRES
+#         # ============================================
+#         apts_duas_vagas = [
+#             apt for apt in todos_apartamentos
+#             if apt.direito_duas_vagas_livres and apt.id not in apartamentos_atribuidos_ids
+#         ]
+#         random.shuffle(apts_duas_vagas)
+
+#         # Filtrar vagas disponíveis uma única vez (otimização)
+#         vagas_disponiveis_duas = [v for v in todas_vagas_simples if v.id not in vagas_atribuidas_ids]
+#         random.shuffle(vagas_disponiveis_duas)
+#         indice_vagas = 0
+
+#         for apt in apts_duas_vagas:
+#             # Atribuir 2 vagas simples
+#             if indice_vagas + 1 < len(vagas_disponiveis_duas):
+#                 vaga1 = vagas_disponiveis_duas[indice_vagas]
+#                 vaga2 = vagas_disponiveis_duas[indice_vagas + 1]
+                
+#                 sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga1))
+#                 sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga2))
+#                 vagas_atribuidas_ids.add(vaga1.id)
+#                 vagas_atribuidas_ids.add(vaga2.id)
+#                 apartamentos_atribuidos_ids.add(apt.id)
+#                 indice_vagas += 2
+#                 print(f"✅ Apartamento {apt.numero} → 2 vagas: {vaga1.numero} e {vaga2.numero}")
+
+#         # ============================================
+#         # 3. APARTAMENTOS COM DIREITO A VAGA DUPLA
+#         # ============================================
+#         apts_vaga_dupla = [
+#             apt for apt in todos_apartamentos
+#             if apt.direito_vaga_dupla and apt.id not in apartamentos_atribuidos_ids
+#         ]
+#         random.shuffle(apts_vaga_dupla)
+
+#         # Filtrar vagas duplas disponíveis uma única vez (otimização)
+#         vagas_duplas_disponiveis = [
+#             v for v in todas_vagas_duplas
+#             if v.id not in vagas_atribuidas_ids
+#         ]
+#         random.shuffle(vagas_duplas_disponiveis)
+#         indice_duplas = 0
+
+#         for apt in apts_vaga_dupla:
+#             if indice_duplas < len(vagas_duplas_disponiveis):
+#                 vaga_dupla = vagas_duplas_disponiveis[indice_duplas]
+#                 sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga_dupla))
+#                 vagas_atribuidas_ids.add(vaga_dupla.id)
+#                 apartamentos_atribuidos_ids.add(apt.id)
+#                 indice_duplas += 1
+#                 print(f"✅ Apartamento {apt.numero} → Vaga Dupla {vaga_dupla.numero}")
+
+#         # ============================================
+#         # 4. DEMAIS APARTAMENTOS (1 vaga simples cada)
+#         # ============================================
+#         apts_restantes = [
+#             apt for apt in todos_apartamentos
+#             if apt.id not in apartamentos_atribuidos_ids
+#         ]
+#         random.shuffle(apts_restantes)
+
+#         # Filtrar vagas simples disponíveis uma única vez (otimização)
+#         vagas_simples_disponiveis = [
+#             v for v in todas_vagas_simples
+#             if v.id not in vagas_atribuidas_ids
+#         ]
+#         random.shuffle(vagas_simples_disponiveis)
+#         indice_simples = 0
+
+#         for apt in apts_restantes:
+#             if indice_simples < len(vagas_simples_disponiveis):
+#                 vaga_simples = vagas_simples_disponiveis[indice_simples]
+#                 sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga_simples))
+#                 apartamentos_atribuidos_ids.add(apt.id)
+#                 indice_simples += 1
+#                 print(f"✅ Apartamento {apt.numero} → {vaga_simples.numero} ({vaga_simples.subsolo})")
+
+#         # ============================================
+#         # 5. BULK CREATE (otimização de performance)
+#         # ============================================
+#         if sorteios_para_criar:
+#             Sorteio.objects.bulk_create(sorteios_para_criar)
+#             print(f"\n✅ Total de {len(sorteios_para_criar)} sorteios criados com sucesso!")
+
+#         # Marcar o sorteio como iniciado e armazenar o horário de conclusão
+#         request.session['sorteio_iniciado'] = True
+#         request.session['horario_conclusao'] = timezone.localtime().strftime("%d/%m/%Y às %Hh %Mmin e %Ss")
+
+#         # Redireciona para a mesma página após o sorteio
+#         return redirect(reverse('sky_view_sorteio'))
+
+#     # Se o método for GET, exibe os resultados ou a interface de sorteio
+#     sorteio_iniciado = request.session.get('sorteio_iniciado', False)
+#     vagas_atribuidas = Sorteio.objects.exists()
+#     # resultados_sorteio = Sorteio.objects.all() if vagas_atribuidas else None
+#     resultados_sorteio = Sorteio.objects.order_by('apartamento__id') if vagas_atribuidas else None
+
+#     context = {
+#         'sorteio_iniciado': sorteio_iniciado,
+#         'vagas_atribuidas': vagas_atribuidas,
+#         'resultados_sorteio': resultados_sorteio,
+#         'horario_conclusao': request.session.get('horario_conclusao', '')  # Exibe o horário de conclusão
+#     }
+
+#     return render(request, 'sky_view/sky_view_sorteio.html', context)
