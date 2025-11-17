@@ -13,6 +13,7 @@ urlpatterns = [
     path('', include('splendore.urls')),
     path('', include('helborsorteio.urls')),
     path('', include('fatto_passion.urls')),
+    path('', include('la_corunha.urls')),
 ]
 
 
