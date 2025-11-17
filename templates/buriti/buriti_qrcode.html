@@ -1,0 +1,66 @@
+{% extends 'sorteio_novo/base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">RESULTADO SORTEIO!</h1>
+            
+            <div class="max-w-md mx-auto">
+                <h2 class="text-2xl font-light text-gray-700 text-center mb-6">Selecione seu apartamento!</h2>
+                
+                <form method="get" action="{% url 'buriti_qrcode' %}" class="space-y-4">
+                    <div>
+                        <select id="numeroApartamento" name="apartamento" class="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg shadow-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#5E17EB] focus:border-[#5E17EB]">
+                            <option value="" disabled {% if not apartamento_selecionado %}selected{% endif %}>Selecione seu apartamento</option>
+                            {% for apt in apartamentos_disponiveis %}
+                                {% if apt.numero == apartamento_selecionado %}
+                                    <option value="{{ apt.numero }}" selected>Bloco {{ apt.bloco }} - {{ apt.numero }}</option>
+                                {% else %}
+                                    <option value="{{ apt.numero }}">Bloco {{ apt.bloco }} - {{ apt.numero }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                            Filtrar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {% if apartamento_selecionado %}
+                {% if resultados_filtrados %}
+                <div class="mt-12">
+                    <h3 class="text-2xl font-light text-gray-900 text-center mb-6">Vagas para o apartamento: {{ apartamento_selecionado }}</h3>
+                    <div class="space-y-4 max-w-2xl mx-auto">
+                        {% for sorteio in resultados_filtrados %}
+                        <div class="bg-gradient-to-r from-[#5E17EB]/10 to-[#5E17EB]/5 rounded-lg p-6 shadow-sm">
+                            <div class="space-y-2">
+                                <p class="text-lg font-medium text-gray-900">
+                                    Vaga: {{ sorteio.vaga.numero }}{% if sorteio.vaga.bloco %} - Bloco {{ sorteio.vaga.bloco }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="mt-12">
+                    <div class="max-w-2xl mx-auto">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+                            <p class="text-lg text-gray-700">
+                                Nenhuma vaga encontrada para o apartamento: <strong>{{ apartamento_selecionado }}</strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
