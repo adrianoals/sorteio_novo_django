@@ -140,7 +140,6 @@ def la_corunha_excel(request):
         ws[f'A{linha}'] = sorteio.apartamento.numero
         ws[f'B{linha}'] = sorteio.vaga.numero
         ws[f'C{linha}'] = sorteio.vaga.tipo_vaga
-        ws[f'D{linha}'] = 'La Corunha'  # Nome do condomínio
         linha += 1
 
     # Configurar a resposta para o download do Excel
