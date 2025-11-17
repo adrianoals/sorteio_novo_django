@@ -26,6 +26,18 @@ class Vaga(models.Model):
     
     numero = models.CharField(max_length=20)  # Ex: "Vaga 01", "Vaga Moto 01"
     tipo_vaga = models.CharField(max_length=10, choices=TIPO_VAGA_CHOICES)
+    is_carro = models.BooleanField(default=False, help_text="True se for vaga de carro")
+    is_moto = models.BooleanField(default=False, help_text="True se for vaga de moto")
+    
+    def save(self, *args, **kwargs):
+        # Atualizar automaticamente os campos booleanos baseado no tipo_vaga
+        if self.tipo_vaga == 'Carro':
+            self.is_carro = True
+            self.is_moto = False
+        elif self.tipo_vaga == 'Moto':
+            self.is_carro = False
+            self.is_moto = True
+        super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.numero} ({self.tipo_vaga})"

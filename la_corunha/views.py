@@ -16,8 +16,22 @@ def la_corunha_sorteio(request):
         apts_carro = list(Apartamento.objects.filter(tipo_vaga_direito='Carro'))
         apts_moto = list(Apartamento.objects.filter(tipo_vaga_direito='Moto'))
         
-        vagas_carro = list(Vaga.objects.filter(tipo_vaga='Carro'))
-        vagas_moto = list(Vaga.objects.filter(tipo_vaga='Moto'))
+        # Usar os campos booleanos para garantir filtro correto
+        vagas_carro = list(Vaga.objects.filter(is_carro=True))
+        vagas_moto = list(Vaga.objects.filter(is_moto=True))
+        
+        print(f"\n📊 DEBUG: Apartamentos Carro: {len(apts_carro)} | Vagas Carro: {len(vagas_carro)}")
+        print(f"📊 DEBUG: Apartamentos Moto: {len(apts_moto)} | Vagas Moto: {len(vagas_moto)}")
+        
+        # Verificar se os números estão corretos
+        if len(apts_carro) != 20:
+            print(f"⚠️ ATENÇÃO: Esperado 20 apartamentos de Carro, encontrado {len(apts_carro)}")
+        if len(apts_moto) != 9:
+            print(f"⚠️ ATENÇÃO: Esperado 9 apartamentos de Moto, encontrado {len(apts_moto)}")
+        if len(vagas_carro) != 14:
+            print(f"⚠️ ATENÇÃO: Esperado 14 vagas de Carro, encontrado {len(vagas_carro)}")
+        if len(vagas_moto) != 15:
+            print(f"⚠️ ATENÇÃO: Esperado 15 vagas de Moto, encontrado {len(vagas_moto)}")
 
         # Usar set para rastrear IDs de vagas e apartamentos já atribuídos
         vagas_atribuidas_ids = set()
@@ -30,16 +44,20 @@ def la_corunha_sorteio(request):
         random.shuffle(apts_carro)
         random.shuffle(vagas_carro)
         
-        indice_carro = 0
-        for apt in apts_carro:
-            if indice_carro < len(vagas_carro):
-                vaga_carro = vagas_carro[indice_carro]
-                if vaga_carro.id not in vagas_atribuidas_ids:
-                    sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga_carro))
-                    vagas_atribuidas_ids.add(vaga_carro.id)
-                    apartamentos_atribuidos_ids.add(apt.id)
-                    indice_carro += 1
-                    print(f"✅ Apartamento {apt.numero} → Vaga Carro {vaga_carro.numero}")
+        # Garantir que temos vagas suficientes
+        if len(apts_carro) > len(vagas_carro):
+            print(f"⚠️ AVISO: {len(apts_carro)} apartamentos com direito a Carro, mas apenas {len(vagas_carro)} vagas disponíveis!")
+        
+        # Atribuir uma vaga para cada apartamento (até o limite de vagas disponíveis)
+        for i, apt in enumerate(apts_carro):
+            if i < len(vagas_carro):
+                vaga_carro = vagas_carro[i]
+                sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga_carro))
+                vagas_atribuidas_ids.add(vaga_carro.id)
+                apartamentos_atribuidos_ids.add(apt.id)
+                print(f"✅ Apartamento {apt.numero} → Vaga Carro {vaga_carro.numero}")
+            else:
+                print(f"⚠️ Apartamento {apt.numero} não recebeu vaga (vagas insuficientes)")
 
         # ============================================
         # 2. SORTEIO DE VAGAS DE MOTO
@@ -47,16 +65,20 @@ def la_corunha_sorteio(request):
         random.shuffle(apts_moto)
         random.shuffle(vagas_moto)
         
-        indice_moto = 0
-        for apt in apts_moto:
-            if indice_moto < len(vagas_moto):
-                vaga_moto = vagas_moto[indice_moto]
-                if vaga_moto.id not in vagas_atribuidas_ids:
-                    sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga_moto))
-                    vagas_atribuidas_ids.add(vaga_moto.id)
-                    apartamentos_atribuidos_ids.add(apt.id)
-                    indice_moto += 1
-                    print(f"✅ Apartamento {apt.numero} → Vaga Moto {vaga_moto.numero}")
+        # Garantir que temos vagas suficientes
+        if len(apts_moto) > len(vagas_moto):
+            print(f"⚠️ AVISO: {len(apts_moto)} apartamentos com direito a Moto, mas apenas {len(vagas_moto)} vagas disponíveis!")
+        
+        # Atribuir uma vaga para cada apartamento (até o limite de vagas disponíveis)
+        for i, apt in enumerate(apts_moto):
+            if i < len(vagas_moto):
+                vaga_moto = vagas_moto[i]
+                sorteios_para_criar.append(Sorteio(apartamento=apt, vaga=vaga_moto))
+                vagas_atribuidas_ids.add(vaga_moto.id)
+                apartamentos_atribuidos_ids.add(apt.id)
+                print(f"✅ Apartamento {apt.numero} → Vaga Moto {vaga_moto.numero}")
+            else:
+                print(f"⚠️ Apartamento {apt.numero} não recebeu vaga (vagas insuficientes)")
 
         # ============================================
         # 3. BULK CREATE (otimização de performance)
@@ -89,22 +111,23 @@ def la_corunha_sorteio(request):
 
 def la_corunha_excel(request):
     # Caminho do modelo Excel (você pode criar um modelo específico depois)
-    caminho_modelo = 'setup/static/assets/modelos/sorteioskyview.xlsx'  # Usando modelo genérico por enquanto
+    caminho_modelo = 'setup/static/assets/modelos/sorteiolacorunha.xlsx' 
 
     # Carregar o modelo existente
     wb = load_workbook(caminho_modelo)
     ws = wb.active
 
     # Pegar todos os sorteios ordenados por ID do apartamento
-    resultados_sorteio = Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id')
+    resultados_sorteio = list(Sorteio.objects.select_related('apartamento', 'vaga').order_by('apartamento__id').all())
 
     # Pegar o horário de conclusão do sorteio
     horario_conclusao = request.session.get('horario_conclusao', 'Horário não disponível')
     ws['A8'] = f"Sorteio realizado em: {horario_conclusao}"
 
-    # Limpar linhas antigas a partir da linha 10
+    # Limpar linhas antigas a partir da linha 10 até uma quantidade maior para garantir limpeza completa
     linha_inicial = 10
-    linha_maxima = ws.max_row
+    linha_maxima = max(ws.max_row, linha_inicial + len(resultados_sorteio) + 50)  # Limpar mais linhas do que necessário
+    
     for linha in range(linha_inicial, linha_maxima + 1):
         ws[f'A{linha}'] = None
         ws[f'B{linha}'] = None
