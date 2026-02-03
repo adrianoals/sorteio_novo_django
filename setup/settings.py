@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'fatto_passion.apps.FattoPassionConfig',
     'la_corunha.apps.LaCorunhaConfig',
     'buriti.apps.BuritiConfig',
+    'harmonia_class.apps.HarmoniaClassConfig',
 ]
 
 MIDDLEWARE = [

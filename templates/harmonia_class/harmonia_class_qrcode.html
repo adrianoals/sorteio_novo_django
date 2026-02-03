@@ -1,0 +1,49 @@
+{% extends 'sorteio_novo/base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">RESULTADO SORTEIO!</h1>
+            
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-2xl font-light text-gray-900 text-center mb-8">Condomínio Harmonia Class - Selecione seu apartamento!</h2>
+                
+                <div class="text-center mb-8">
+                    <form method="get" action="{% url 'harmonia_class_qrcode' %}" class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                        <select id="numeroApartamento" name="apartamento" class="w-full sm:w-auto px-4 py-3 border border-gray-300 rounded-md shadow-sm text-gray-900 bg-white focus:ring-[#5E17EB] focus:border-[#5E17EB]">
+                            <option value="" disabled {% if not apartamento_selecionado %}selected{% endif %}>Selecione seu apartamento</option>
+                            {% for apt in apartamentos_disponiveis %}
+                                {% if apt.numero == apartamento_selecionado %}
+                                    <option value="{{ apt.numero }}" selected>{{ apt.numero }}</option>
+                                {% else %}
+                                    <option value="{{ apt.numero }}">{{ apt.numero }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="bg-[#5E17EB] hover:bg-[#4912b8] text-white font-light py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105">
+                            Filtrar
+                        </button>
+                    </form>
+                </div>
+
+                {% if resultados_filtrados %}
+                <div class="mt-8">
+                    <h3 class="text-xl font-light text-gray-900 text-center mb-6">Vagas para o apartamento: {{ apartamento_selecionado }}</h3>
+                    <div class="space-y-4">
+                        {% for sorteio in resultados_filtrados %}
+                        <div class="bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition duration-300">
+                            <p class="text-lg font-medium text-gray-900 text-center">
+                                {{ sorteio.vaga.numero }} - {{ sorteio.vaga.localizacao }}
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

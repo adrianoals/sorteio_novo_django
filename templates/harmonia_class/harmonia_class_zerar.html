@@ -1,0 +1,22 @@
+{% extends 'sorteio_novo/base_tailwind.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto mt-[100px] px-4">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-light tracking-tight text-gray-900 mb-8 text-center">VAMOS COMEÇAR!</h1>
+            
+            <form method="post" action="{% url 'harmonia_class_zerar' %}" class="max-w-md mx-auto">
+                {% csrf_token %}
+                <div class="text-center">
+                    <h5 class="text-lg font-light text-gray-600 mb-6">Condomínio Harmonia Class - Clique aqui para zerar o sorteio</h5>
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-light py-2 px-6 rounded-lg transition-all duration-300 transform hover:scale-105" id="botao-zerar">
+                        Zerar Sorteio
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
