@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for app in tres_coelhos sky_view gran_vitta passaros ventura)",
+      "Bash(do)",
+      "Bash(echo \"=== $app ===\")",
+      "Read(//Users/adriano/Desktop/Projetos Pessoais/Sorteio Novo/sorteio_novo_django/**)",
+      "Bash(done)",
+      "Bash(for app in alvorada arthur buriti fatto_passion gran_vitta harmonia_class helborsorteio la_corunha passaros sky_view splendore tres_coelhos ventura)",
+      "Bash(echo \"=== APP: $app ===\")",
+      "Bash(git:*)",
+      "Bash(for app in splendore buriti fatto_passion helborsorteio la_corunha)",
+      "Bash(echo \"=== $app models ===\")",
+      "Read(//Users/adriano/Desktop/Projetos Pessoais/Sorteio Novo/sorteio_novo_django/$app/**)"
+    ]
+  }
+}
